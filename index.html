@@ -231,7 +231,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.60</div>
+<div class="version-badge">v1.64</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -4982,6 +4982,7 @@ const backBtn = document.getElementById('back-btn');
 backBtn.addEventListener('click', ()=>{
   if(currentScreen==='home'){ showStart = true; } else { currentScreen = 'home'; }
   lessenSelection = null;
+  oefenSpecialView = null;
   render();
 });
 
@@ -5027,6 +5028,7 @@ function laNounLeren(){
 
   <h2>Verbuigingsgroepen</h2>
   <p>Je herkent de verbuigingsgroep van een woord aan de genitief enkelvoud: <em>-ae</em> (1e), <em>-i</em> (2e), <em>-is</em> (3e).</p>
+  ${LA_VUISTREGELS_HTML}
 
   <h3>1e verbuigingsgroep — femina, feminae (de vrouw)</h3>
   ${tableHTML(['Enkelvoud','Meervoud'], [
@@ -5080,13 +5082,38 @@ function laNounLeren(){
 }
 
 /* ================= LATIN: NAAMVAL-HERKENNING (identificeren + vormen, met keuzegroepen) ================= */
+const LA_DECL_FULL = {
+  decl1: LA_DECL1,
+  decl2m: LA_DECL2.filter(w=>w.g==='m'),
+  decl2n: LA_DECL2.filter(w=>w.g==='n'),
+  decl3: LA_DECL3
+};
+const LA_DECL_BASIS_LAT = { decl1:['femina'], decl2m:['servus'], decl2n:['donum'], decl3:['rex','nomen'] };
+const LA_DECL_MEER_LAT = {
+  decl1: ['femina','aqua','terra','rosa','via','vita','puella'],
+  decl2m: ['servus','dominus','amicus','deus','filius','populus'],
+  decl2n: ['donum','templum','bellum','verbum','caelum'],
+  decl3: ['rex','lex','pater','mater','frater','soror','homo']
+};
+function laDeclWords(groupId, wordset){
+  const full = LA_DECL_FULL[groupId];
+  const allow = (wordset==='meer' ? LA_DECL_MEER_LAT : LA_DECL_BASIS_LAT)[groupId];
+  return full.filter(w=>allow.includes(w.lat));
+}
 const LA_DECL_GROUPS = [
-  { id:'decl1', label:'1e verbuiging (a-groep)', words: LA_DECL1, forms:(w)=>decl1(w.lat.slice(0,-1)) },
-  { id:'decl2m', label:'2e verbuiging — mannelijk', words: LA_DECL2.filter(w=>w.g==='m'), forms:(w)=>decl2m(w.lat.slice(0,-2)) },
-  { id:'decl2n', label:'2e verbuiging — onzijdig', words: LA_DECL2.filter(w=>w.g==='n'), forms:(w)=>decl2n(w.lat.slice(0,-2)) },
-  { id:'decl3', label:'3e verbuiging', words: LA_DECL3, forms:(w)=> w.g==='n' ? decl3n(w.lat,w.stem) : decl3(w.lat,w.stem) }
+  { id:'decl1', label:'1e verbuiging (a-groep)', forms:(w)=>decl1(w.lat.slice(0,-1)) },
+  { id:'decl2m', label:'2e verbuiging — mannelijk', forms:(w)=>decl2m(w.lat.slice(0,-2)) },
+  { id:'decl2n', label:'2e verbuiging — onzijdig', forms:(w)=>decl2n(w.lat.slice(0,-2)) },
+  { id:'decl3', label:'3e verbuiging', forms:(w)=> w.g==='n' ? decl3n(w.lat,w.stem) : decl3(w.lat,w.stem) }
 ];
 const LA_CASE_NUM_KEYS = ['nomSg','genSg','datSg','accSg','ablSg','nomPl','genPl','datPl','accPl','ablPl'];
+const LA_VUISTREGELS_HTML = `
+  <div class="note" style="line-height:1.7;">
+    <strong>Vuistregels bij de genitief enkelvoud</strong><br>
+    <strong>1e declinatie (a-declinatie)</strong> — genitief op <strong>-ae</strong>. Meestal vrouwelijke woorden die in de nominatief op -a eindigen. Bijv. <em>rosa, rosae</em> (roos).<br>
+    <strong>2e declinatie (o-declinatie)</strong> — genitief op <strong>-i</strong>. Meestal mannelijke woorden op -us of -er, en onzijdige woorden op -um. Bijv. <em>dominus, domini</em> (heer) / <em>bellum, belli</em> (oorlog).<br>
+    <strong>3e declinatie (medeklinker-/i-declinatie)</strong> — genitief op <strong>-is</strong>. De nominatief kan op van alles eindigen (zoals -or, -x, -en, -us) — de grootste en meest gevarieerde groep, kan mannelijk, vrouwelijk of onzijdig zijn. Bijv. <em>rex, regis</em> (koning) / <em>corpus, corporis</em> (lichaam).
+  </div>`;
 
 function renderLaParseOefenen(){
   const wrapId = 'laparse-' + Math.random().toString(36).slice(2,8);
@@ -5094,12 +5121,17 @@ function renderLaParseOefenen(){
   const blocks = LA_DECL_GROUPS.map((g,gi)=>`
     <div class="sub-row">
       <span class="chk-box" data-role="chk-group" data-gi="${gi}">✓</span>
-      <span class="sub-btn" style="cursor:default;flex:1;">${g.label} <span>(${g.words.length} woorden)</span></span>
+      <span class="sub-btn" style="cursor:default;flex:1;">${g.label} <span data-role="grp-count-${gi}">(${laDeclWords(g.id,'basis').length} woorden)</span></span>
     </div>`).join('');
   return `<div id="${wrapId}">
     <h3>Naamval herkennen &amp; vormen</h3>
-    <p style="color:var(--ink-faint);font-size:.85rem;">Kies welke verbuigingsgroepen geoefend worden.</p>
+    <p style="color:var(--ink-faint);font-size:.85rem;">Kies welke verbuigingsgroepen geoefend worden. (De 4e en 5e verbuigingsgroep komen in dit lesboek niet aan bod.)</p>
     <div class="chapter-block" style="padding:8px 0;">${blocks}</div>
+    <div class="dir-toggle" style="display:flex;">
+      <span class="dir-label">Woorden:</span>
+      <button class="dir-btn active" data-wordset="basis">Basis</button>
+      <button class="dir-btn" data-wordset="meer">Meer woorden</button>
+    </div>
     <div class="dir-toggle" style="display:flex;">
       <span class="dir-label">Richting:</span>
       <button class="dir-btn" data-dir="identify">Identificeren</button>
@@ -5116,6 +5148,7 @@ function initLaParseSelect(wrapId){
   if(!root) return;
   const selected = new Set(LA_DECL_GROUPS.map((g,gi)=>gi)); // alles standaard aan
   let direction = 'both';
+  let wordset = 'basis';
   const footer = root.querySelector('[data-role="laparse-footer"]');
   const quizArea = root.querySelector('[data-role="laparse-quiz"]');
 
@@ -5128,10 +5161,20 @@ function initLaParseSelect(wrapId){
       updateFooter();
     });
   });
-  root.querySelectorAll('.dir-btn').forEach(b=>{
+  root.querySelectorAll('[data-wordset]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      wordset = b.dataset.wordset;
+      root.querySelectorAll('[data-wordset]').forEach(x=>x.classList.toggle('active', x===b));
+      LA_DECL_GROUPS.forEach((g,gi)=>{
+        const countEl = root.querySelector(`[data-role="grp-count-${gi}"]`);
+        if(countEl) countEl.textContent = `(${laDeclWords(g.id,wordset).length} woorden)`;
+      });
+    });
+  });
+  root.querySelectorAll('[data-dir]').forEach(b=>{
     b.addEventListener('click', ()=>{
       direction = b.dataset.dir;
-      root.querySelectorAll('.dir-btn').forEach(x=>x.classList.toggle('active', x===b));
+      root.querySelectorAll('[data-dir]').forEach(x=>x.classList.toggle('active', x===b));
     });
   });
 
@@ -5140,7 +5183,7 @@ function initLaParseSelect(wrapId){
     const startBtn = footer.querySelector('[data-role="laparse-start"]');
     if(startBtn){
       startBtn.addEventListener('click', ()=>{
-        const groups = Array.from(selected).map(gi=>LA_DECL_GROUPS[gi]);
+        const groups = Array.from(selected).map(gi=>({ ...LA_DECL_GROUPS[gi], words: laDeclWords(LA_DECL_GROUPS[gi].id, wordset) }));
         quizArea.innerHTML = renderLaParseQuiz(groups, direction);
       });
     }
@@ -5195,25 +5238,39 @@ function initLaParseQuiz(wrapId, groups, direction){
     scoreEl.textContent = `Score: ${score} / ${total}`;
   }
 
+  function wireWordHint(){
+    const el = bodyEl.querySelector('[data-role="lp-word-hint"]');
+    if(!el) return;
+    el.addEventListener('click', ()=>{
+      bodyEl.querySelector('[data-role="lp-hint"]').textContent = `Hint (woordenboekvorm): ${current.w.lat}, ${current.forms.genSg}`;
+    });
+  }
+
   function renderIdentify(){
     const grid = ['nom','gen','dat','acc','abl'].map(caseKey=>`
-      <div class="sub-row">
-        <span style="width:70px;color:var(--ink-dim);font-size:.85rem;">${CASE_LABEL[caseKey]}</span>
-        <button type="button" class="opt lp-toggle" data-role="lp-cn" data-key="${caseKey}Sg" style="flex:1;">enkelvoud</button>
-        <button type="button" class="opt lp-toggle" data-role="lp-cn" data-key="${caseKey}Pl" style="flex:1;">meervoud</button>
+      <div style="margin-bottom:8px;">
+        <div style="color:var(--ink-dim);font-size:.85rem;margin-bottom:4px;">${CASE_LABEL[caseKey]}</div>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="opt lp-toggle" data-role="lp-cn" data-key="${caseKey}Sg" style="flex:1;">enkelvoud</button>
+          <button type="button" class="opt lp-toggle" data-role="lp-cn" data-key="${caseKey}Pl" style="flex:1;">meervoud</button>
+        </div>
       </div>`).join('');
     bodyEl.innerHTML = `
-      <p class="quiz-question">Welke naamval(len) en welk aantal past/passen bij <span class="w">${current.formStr}</span>? En welk geslacht heeft dit woord?</p>
+      <p class="quiz-question" style="text-align:center;font-size:1.4rem;"><span class="w" data-role="lp-word-hint" style="cursor:pointer;border-bottom:1px dotted var(--gold);" title="Tik voor hint">${current.formStr}</span></p>
+      <p class="hint-text" data-role="lp-hint"></p>
       <div style="margin:10px 0;">${grid}</div>
-      <div class="sub-row">
-        <span style="width:70px;color:var(--ink-dim);font-size:.85rem;">Geslacht</span>
-        <button type="button" class="opt lp-gender" data-role="lp-g" data-g="m" style="flex:1;">mannelijk</button>
-        <button type="button" class="opt lp-gender" data-role="lp-g" data-g="f" style="flex:1;">vrouwelijk</button>
-        <button type="button" class="opt lp-gender" data-role="lp-g" data-g="n" style="flex:1;">onzijdig</button>
+      <div>
+        <div style="color:var(--ink-dim);font-size:.85rem;margin-bottom:4px;">Geslacht</div>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="opt lp-gender" data-role="lp-g" data-g="m" style="flex:1;">mannelijk</button>
+          <button type="button" class="opt lp-gender" data-role="lp-g" data-g="f" style="flex:1;">vrouwelijk</button>
+          <button type="button" class="opt lp-gender" data-role="lp-g" data-g="n" style="flex:1;">onzijdig</button>
+        </div>
       </div>
       <button class="next-btn show" data-role="lp-check" style="margin-top:12px;">Controleer</button>
     `;
     bodyEl.querySelector('[data-role="lp-check"]').addEventListener('click', checkIdentify);
+    wireWordHint();
   }
 
   function checkIdentify(){
@@ -5246,21 +5303,17 @@ function initLaParseQuiz(wrapId, groups, direction){
   function renderProduce(){
     const caseKey = current.key.slice(0,3); const number = current.key.slice(3);
     bodyEl.innerHTML = `
-      <p class="quiz-question">Wat is de <strong>${CASE_LABEL[caseKey]} ${NUM_LABEL[number]}</strong> (${GENDER_LABEL[current.w.g]}) van <span class="w">${current.w.lat}</span> (${current.w.nl})?</p>
+      <p class="quiz-question">Wat is de <strong>${CASE_LABEL[caseKey]} ${NUM_LABEL[number]}</strong> (${GENDER_LABEL[current.w.g]}) van <span class="w" data-role="lp-word-hint" style="cursor:pointer;border-bottom:1px dotted var(--gold);" title="Tik voor hint">${current.w.lat}</span> (${current.w.nl})?</p>
       <p class="hint-text" data-role="lp-hint"></p>
       <div class="input-row" style="display:flex;">
         <input type="text" class="text-input" data-role="lp-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Typ je antwoord...">
         <button class="check-btn" data-role="lp-checkbtn">Controleer</button>
       </div>
-      <button class="next-btn show" data-role="lp-hintbtn" style="margin-top:8px;background:var(--card);color:var(--gold);border:1px solid var(--gold-dim);">Hint: welke verbuigingsgroep?</button>
     `;
     const input = bodyEl.querySelector('[data-role="lp-input"]');
     bodyEl.querySelector('[data-role="lp-checkbtn"]').addEventListener('click', ()=>checkProduce(input.value));
     input.addEventListener('keydown', e=>{ if(e.key==='Enter') checkProduce(input.value); });
-    bodyEl.querySelector('[data-role="lp-hintbtn"]').addEventListener('click', (e)=>{
-      bodyEl.querySelector('[data-role="lp-hint"]').textContent = `Hint: dit woord hoort bij de ${current.g.label}.`;
-      e.target.remove();
-    });
+    wireWordHint();
   }
 
   function checkProduce(val){
@@ -7404,6 +7457,7 @@ function renderLangHome(){
 
 /* ================= LESSEN ================= */
 let lessenSelection = null; // null | {special:id} | {ci,si}
+let oefenSpecialView = null; // null | 'la-nouns' | 'la-verbs' | ...
 
 function renderLessen(){
   const chapters = getChapters(currentLang);
@@ -7468,11 +7522,10 @@ function renderLessonDetail(chapters){
 
   if(lessenSelection.special){
     const sc = SPECIAL_CONTENT[lessenSelection.special];
-    const extraBtn = lessenSelection.special==='la-nouns' ? `<button class="next-btn show" data-role="special-oefen2" style="margin-left:8px;">Naamval herkennen &amp; vormen →</button>` : '';
     return `<div id="${wrapId}">
       <button class="back-btn" data-role="lessen-back" style="display:inline-block;">← Hoofdstukken</button>
       ${sc.leren()}
-      <div style="margin-top:20px;"><button class="next-btn show" data-role="special-oefen">Oefenen →</button>${extraBtn}</div>
+      <div style="margin-top:20px;"><button class="next-btn show" data-role="special-oefen">Oefenen →</button></div>
       <div data-role="special-quiz" style="margin-top:16px;"></div>
     </div>`;
   }
@@ -7504,14 +7557,8 @@ function initLessonDetail(wrapId, chapters){
   if(lessenSelection.special){
     const sc = SPECIAL_CONTENT[lessenSelection.special];
     root.querySelector('[data-role="special-oefen"]').addEventListener('click', ()=>{
-      root.querySelector('[data-role="special-quiz"]').innerHTML = sc.oefenen();
+      root.querySelector('[data-role="special-quiz"]').innerHTML = lessenSelection.special==='la-nouns' ? renderLaParseOefenen() : sc.oefenen();
     });
-    const oefen2 = root.querySelector('[data-role="special-oefen2"]');
-    if(oefen2){
-      oefen2.addEventListener('click', ()=>{
-        root.querySelector('[data-role="special-quiz"]').innerHTML = renderLaParseOefenen();
-      });
-    }
     return;
   }
 
@@ -7541,12 +7588,21 @@ function initLessonDetail(wrapId, chapters){
 
 /* ================= OEFENEN & TOETS: SELECTIE ================= */
 function renderSelect(mode){
-  const chapters = getChapters(currentLang)
+  if(mode==='oefenen' && oefenSpecialView){
+    return renderOefenSpecialDetail();
+  }
+  const allChapters = getChapters(currentLang);
+  const specials = mode==='oefenen' ? allChapters.filter(c=>c.special) : [];
+  const chapters = allChapters
     .filter(c=>!c.special)
     .map(c=>({ ...c, subs: c.subs.filter(s=>s.words.length>0) }))
     .filter(c=>c.subs.length>0);
   const wrapId = 'sel-' + Math.random().toString(36).slice(2,8);
-  setTimeout(()=>initSelect(wrapId, chapters, mode), 0);
+  setTimeout(()=>initSelect(wrapId, chapters, mode, specials), 0);
+  const specialBlocks = specials.map((c,si)=>`
+    <div class="chapter-block">
+      <button class="chapter-header" data-role="special-select" data-si="${si}"><strong>${c.title}</strong></button>
+    </div>`).join('');
   const blocks = chapters.map((c,ci)=>{
     if(c.subs.length===1){
       return `<div class="chapter-block">
@@ -7574,18 +7630,47 @@ function renderSelect(mode){
   const modeLabel = mode==='toets' ? 'Toets' : 'Oefenen';
   return `<div id="${wrapId}">
     <h2>${modeLabel} — kies paragrafen</h2>
+    ${specials.length ? `<p style="color:var(--ink-faint);font-size:.85rem;">Grammatica-onderdelen:</p>${specialBlocks}<h3>Woordenschat per hoofdstuk</h3>` : ''}
     <p style="color:var(--ink-faint);font-size:.85rem;">Tik een hoofdstuk aan om alle paragrafen te selecteren, of klap open voor losse paragrafen.</p>
     ${blocks}
     <div data-role="select-footer" style="margin-top:20px;"></div>
   </div>`;
 }
 
-function initSelect(wrapId, chapters, mode){
+function renderOefenSpecialDetail(){
+  const c = getChapters(currentLang).find(x=>x.special===oefenSpecialView);
+  const wrapId = 'oefenspec-' + Math.random().toString(36).slice(2,8);
+  setTimeout(()=>{
+    const root = document.getElementById(wrapId);
+    if(!root) return;
+    root.querySelector('[data-role="oefenspec-back"]').addEventListener('click', ()=>{
+      oefenSpecialView = null;
+      render();
+    });
+  }, 0);
+  const inner = oefenSpecialView==='la-nouns' ? renderLaParseOefenen() : SPECIAL_CONTENT[oefenSpecialView].oefenen();
+  return `<div id="${wrapId}">
+    <button class="back-btn" data-role="oefenspec-back" style="display:inline-block;">← Oefenen</button>
+    ${inner}
+  </div>`;
+}
+
+function initSelect(wrapId, chapters, mode, specials){
   const root = document.getElementById(wrapId);
   if(!root) return;
   const footer = root.querySelector('[data-role="select-footer"]');
   const selected = new Set();
   const subKey = (ci,si)=> ci+'-'+si;
+
+  if(specials && specials.length){
+    root.querySelectorAll('[data-role="special-select"]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const c = specials[+btn.dataset.si];
+        oefenSpecialView = c.special;
+        render();
+      });
+    });
+  }
 
   function collectWords(){
     const words = []; let firstItemLabel;
