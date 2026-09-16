@@ -165,6 +165,7 @@
   .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
   @media (max-width:480px){.options{grid-template-columns:1fr;}}
   .opt{font-family:'Nunito',sans-serif;font-size:.98rem;font-weight:700;background:var(--card-2);border:1px solid rgba(217,164,65,0.3);color:var(--ink);border-radius:var(--radius);padding:11px;cursor:pointer;}
+  .opt.active{background:var(--gold);border-color:var(--gold);color:#221c15;}
   .opt:hover:not(:disabled){border-color:var(--gold);}
   .opt.correct{background:var(--good);border-color:var(--good);color:#fff;}
   .opt.wrong{background:var(--bad);border-color:var(--bad);color:#fff;}
@@ -230,7 +231,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.58</div>
+<div class="version-badge">v1.60</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -321,11 +322,11 @@ function decl3(nomSg,stem){ return { nomSg:nomSg,genSg:stem+'is',datSg:stem+'i',
 function decl3n(nomSg,stem){ return { nomSg:nomSg,genSg:stem+'is',datSg:stem+'i',accSg:nomSg,ablSg:stem+'e',
   nomPl:stem+'a',genPl:stem+'um',datPl:stem+'ibus',accPl:stem+'a',ablPl:stem+'ibus' }; }
 
-const LA_DECL1 = [['femina','vrouw'],['aqua','water'],['terra','aarde, land'],['rosa','roos'],['via','weg'],
-  ['vita','leven'],['puella','meisje'],['insula','eiland'],['silva','bos'],['mensa','tafel'],['porta','poort'],
-  ['stella','ster'],['luna','maan'],['pecunia','geld'],['patria','vaderland'],['epistula','brief'],['fabula','verhaal'],
-  ['cena','maaltijd'],['nauta','matroos (m.)'],['agricola','boer (m.)'],['poeta','dichter (m.)'],['incola','inwoner'],
-  ['ancilla','slavin'],['dea','godin'],['hora','uur']].map(([lat,nl])=>({lat,nl}));
+const LA_DECL1 = [['femina','vrouw','f'],['aqua','water','f'],['terra','aarde, land','f'],['rosa','roos','f'],['via','weg','f'],
+  ['vita','leven','f'],['puella','meisje','f'],['insula','eiland','f'],['silva','bos','f'],['mensa','tafel','f'],['porta','poort','f'],
+  ['stella','ster','f'],['luna','maan','f'],['pecunia','geld','f'],['patria','vaderland','f'],['epistula','brief','f'],['fabula','verhaal','f'],
+  ['cena','maaltijd','f'],['nauta','matroos','m'],['agricola','boer','m'],['poeta','dichter','m'],['incola','inwoner','f'],
+  ['ancilla','slavin','f'],['dea','godin','f'],['hora','uur','f']].map(([lat,nl,g])=>({lat,nl,g}));
 
 const LA_DECL2 = [['servus','slaaf','m'],['dominus','heer, meester','m'],['amicus','vriend','m'],['deus','god','m'],
   ['filius','zoon','m'],['populus','volk','m'],['equus','paard','m'],['gladius','zwaard','m'],['lupus','wolf','m'],
@@ -5078,6 +5079,216 @@ function laNounLeren(){
   `;
 }
 
+/* ================= LATIN: NAAMVAL-HERKENNING (identificeren + vormen, met keuzegroepen) ================= */
+const LA_DECL_GROUPS = [
+  { id:'decl1', label:'1e verbuiging (a-groep)', words: LA_DECL1, forms:(w)=>decl1(w.lat.slice(0,-1)) },
+  { id:'decl2m', label:'2e verbuiging — mannelijk', words: LA_DECL2.filter(w=>w.g==='m'), forms:(w)=>decl2m(w.lat.slice(0,-2)) },
+  { id:'decl2n', label:'2e verbuiging — onzijdig', words: LA_DECL2.filter(w=>w.g==='n'), forms:(w)=>decl2n(w.lat.slice(0,-2)) },
+  { id:'decl3', label:'3e verbuiging', words: LA_DECL3, forms:(w)=> w.g==='n' ? decl3n(w.lat,w.stem) : decl3(w.lat,w.stem) }
+];
+const LA_CASE_NUM_KEYS = ['nomSg','genSg','datSg','accSg','ablSg','nomPl','genPl','datPl','accPl','ablPl'];
+
+function renderLaParseOefenen(){
+  const wrapId = 'laparse-' + Math.random().toString(36).slice(2,8);
+  setTimeout(()=>initLaParseSelect(wrapId), 0);
+  const blocks = LA_DECL_GROUPS.map((g,gi)=>`
+    <div class="sub-row">
+      <span class="chk-box" data-role="chk-group" data-gi="${gi}">✓</span>
+      <span class="sub-btn" style="cursor:default;flex:1;">${g.label} <span>(${g.words.length} woorden)</span></span>
+    </div>`).join('');
+  return `<div id="${wrapId}">
+    <h3>Naamval herkennen &amp; vormen</h3>
+    <p style="color:var(--ink-faint);font-size:.85rem;">Kies welke verbuigingsgroepen geoefend worden.</p>
+    <div class="chapter-block" style="padding:8px 0;">${blocks}</div>
+    <div class="dir-toggle" style="display:flex;">
+      <span class="dir-label">Richting:</span>
+      <button class="dir-btn" data-dir="identify">Identificeren</button>
+      <button class="dir-btn" data-dir="produce">Vormen</button>
+      <button class="dir-btn active" data-dir="both">Beide</button>
+    </div>
+    <div data-role="laparse-footer" style="margin-top:14px;"></div>
+    <div data-role="laparse-quiz" style="margin-top:16px;"></div>
+  </div>`;
+}
+
+function initLaParseSelect(wrapId){
+  const root = document.getElementById(wrapId);
+  if(!root) return;
+  const selected = new Set(LA_DECL_GROUPS.map((g,gi)=>gi)); // alles standaard aan
+  let direction = 'both';
+  const footer = root.querySelector('[data-role="laparse-footer"]');
+  const quizArea = root.querySelector('[data-role="laparse-quiz"]');
+
+  root.querySelectorAll('[data-role="chk-group"]').forEach(chk=>{
+    chk.classList.add('checked');
+    chk.addEventListener('click', ()=>{
+      const gi = +chk.dataset.gi;
+      if(selected.has(gi)){ selected.delete(gi); chk.classList.remove('checked'); }
+      else { selected.add(gi); chk.classList.add('checked'); }
+      updateFooter();
+    });
+  });
+  root.querySelectorAll('.dir-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      direction = b.dataset.dir;
+      root.querySelectorAll('.dir-btn').forEach(x=>x.classList.toggle('active', x===b));
+    });
+  });
+
+  function updateFooter(){
+    footer.innerHTML = selected.size ? `<button class="next-btn show" data-role="laparse-start">Start oefening</button>` : '<p style="color:var(--bad);font-size:.85rem;">Kies minstens één verbuigingsgroep.</p>';
+    const startBtn = footer.querySelector('[data-role="laparse-start"]');
+    if(startBtn){
+      startBtn.addEventListener('click', ()=>{
+        const groups = Array.from(selected).map(gi=>LA_DECL_GROUPS[gi]);
+        quizArea.innerHTML = renderLaParseQuiz(groups, direction);
+      });
+    }
+  }
+  updateFooter();
+}
+
+function renderLaParseQuiz(groups, direction){
+  const wrapId = 'laparseq-' + Math.random().toString(36).slice(2,8);
+  setTimeout(()=>initLaParseQuiz(wrapId, groups, direction), 0);
+  return `<div id="${wrapId}">
+    <div class="quiz-card">
+      <div class="quiz-meta"><span data-role="lp-score">Score: 0 / 0</span></div>
+      <div data-role="lp-body"></div>
+      <p class="feedback" data-role="lp-feedback"></p>
+      <button class="next-btn" data-role="lp-next">Volgende →</button>
+    </div>
+  </div>`;
+}
+
+function initLaParseQuiz(wrapId, groups, direction){
+  const root = document.getElementById(wrapId);
+  if(!root) return;
+  const scoreEl = root.querySelector('[data-role="lp-score"]');
+  const bodyEl = root.querySelector('[data-role="lp-body"]');
+  const feedbackEl = root.querySelector('[data-role="lp-feedback"]');
+  const nextBtn = root.querySelector('[data-role="lp-next"]');
+  let score=0, total=0, current=null;
+
+  const allWords = groups.flatMap(g=>g.words.map(w=>({w, g})));
+
+  function pickMode(){
+    if(direction==='identify') return 'identify';
+    if(direction==='produce') return 'produce';
+    return Math.random()<0.5 ? 'identify' : 'produce';
+  }
+
+  function next(){
+    feedbackEl.textContent=''; feedbackEl.className='feedback';
+    nextBtn.classList.remove('show');
+    const mode = pickMode();
+    const { w, g } = allWords[Math.floor(Math.random()*allWords.length)];
+    const forms = g.forms(w);
+    const key = LA_CASE_NUM_KEYS[Math.floor(Math.random()*LA_CASE_NUM_KEYS.length)];
+    const formStr = forms[key];
+    // alle (naamval,aantal) van dít woord die exact dezelfde vorm opleveren
+    const matches = LA_CASE_NUM_KEYS.filter(k=>forms[k]===formStr);
+    current = { mode, w, g, forms, key, formStr, matches };
+
+    if(mode==='identify') renderIdentify();
+    else renderProduce();
+    scoreEl.textContent = `Score: ${score} / ${total}`;
+  }
+
+  function renderIdentify(){
+    const grid = ['nom','gen','dat','acc','abl'].map(caseKey=>`
+      <div class="sub-row">
+        <span style="width:70px;color:var(--ink-dim);font-size:.85rem;">${CASE_LABEL[caseKey]}</span>
+        <button type="button" class="opt lp-toggle" data-role="lp-cn" data-key="${caseKey}Sg" style="flex:1;">enkelvoud</button>
+        <button type="button" class="opt lp-toggle" data-role="lp-cn" data-key="${caseKey}Pl" style="flex:1;">meervoud</button>
+      </div>`).join('');
+    bodyEl.innerHTML = `
+      <p class="quiz-question">Welke naamval(len) en welk aantal past/passen bij <span class="w">${current.formStr}</span>? En welk geslacht heeft dit woord?</p>
+      <div style="margin:10px 0;">${grid}</div>
+      <div class="sub-row">
+        <span style="width:70px;color:var(--ink-dim);font-size:.85rem;">Geslacht</span>
+        <button type="button" class="opt lp-gender" data-role="lp-g" data-g="m" style="flex:1;">mannelijk</button>
+        <button type="button" class="opt lp-gender" data-role="lp-g" data-g="f" style="flex:1;">vrouwelijk</button>
+        <button type="button" class="opt lp-gender" data-role="lp-g" data-g="n" style="flex:1;">onzijdig</button>
+      </div>
+      <button class="next-btn show" data-role="lp-check" style="margin-top:12px;">Controleer</button>
+    `;
+    bodyEl.querySelector('[data-role="lp-check"]').addEventListener('click', checkIdentify);
+  }
+
+  function checkIdentify(){
+    const chosenKeys = Array.from(bodyEl.querySelectorAll('[data-role="lp-cn"].active')).map(b=>b.dataset.key);
+    const chosenGender = bodyEl.querySelector('[data-role="lp-g"].active');
+    const chosenG = chosenGender ? chosenGender.dataset.g : null;
+    const correctSet = new Set(current.matches);
+    const chosenSet = new Set(chosenKeys);
+    const cnOk = correctSet.size===chosenSet.size && [...correctSet].every(k=>chosenSet.has(k));
+    const gOk = chosenG === current.w.g;
+    const isCorrect = cnOk && gOk;
+    total++; if(isCorrect) score++;
+    bodyEl.querySelectorAll('[data-role="lp-cn"]').forEach(b=>{
+      b.disabled = true;
+      if(correctSet.has(b.dataset.key)) b.classList.add('correct');
+      else if(b.classList.contains('active')) b.classList.add('wrong');
+    });
+    bodyEl.querySelectorAll('[data-role="lp-g"]').forEach(b=>{
+      b.disabled = true;
+      if(b.dataset.g===current.w.g) b.classList.add('correct');
+      else if(b.classList.contains('active')) b.classList.add('wrong');
+    });
+    const correctLabels = current.matches.map(k=>`${CASE_LABEL[k.slice(0,3)]} ${NUM_LABEL[k.slice(3)]}`).join(', ');
+    feedbackEl.textContent = isCorrect ? `Goed zo! (${current.w.lat} — ${GENDER_LABEL[current.w.g]})` : `Niet helemaal — juist was: ${correctLabels}, ${GENDER_LABEL[current.w.g]} (${current.w.lat}, ${current.w.nl}).`;
+    feedbackEl.className = 'feedback ' + (isCorrect?'good':'bad');
+    scoreEl.textContent = `Score: ${score} / ${total}`;
+    nextBtn.classList.add('show');
+  }
+
+  function renderProduce(){
+    const caseKey = current.key.slice(0,3); const number = current.key.slice(3);
+    bodyEl.innerHTML = `
+      <p class="quiz-question">Wat is de <strong>${CASE_LABEL[caseKey]} ${NUM_LABEL[number]}</strong> (${GENDER_LABEL[current.w.g]}) van <span class="w">${current.w.lat}</span> (${current.w.nl})?</p>
+      <p class="hint-text" data-role="lp-hint"></p>
+      <div class="input-row" style="display:flex;">
+        <input type="text" class="text-input" data-role="lp-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Typ je antwoord...">
+        <button class="check-btn" data-role="lp-checkbtn">Controleer</button>
+      </div>
+      <button class="next-btn show" data-role="lp-hintbtn" style="margin-top:8px;background:var(--card);color:var(--gold);border:1px solid var(--gold-dim);">Hint: welke verbuigingsgroep?</button>
+    `;
+    const input = bodyEl.querySelector('[data-role="lp-input"]');
+    bodyEl.querySelector('[data-role="lp-checkbtn"]').addEventListener('click', ()=>checkProduce(input.value));
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') checkProduce(input.value); });
+    bodyEl.querySelector('[data-role="lp-hintbtn"]').addEventListener('click', (e)=>{
+      bodyEl.querySelector('[data-role="lp-hint"]').textContent = `Hint: dit woord hoort bij de ${current.g.label}.`;
+      e.target.remove();
+    });
+  }
+
+  function checkProduce(val){
+    const isCorrect = normAnswer(val) === normAnswer(current.formStr);
+    total++; if(isCorrect) score++;
+    const input = bodyEl.querySelector('[data-role="lp-input"]');
+    const checkBtn = bodyEl.querySelector('[data-role="lp-checkbtn"]');
+    if(input){ input.disabled = true; }
+    if(checkBtn){ checkBtn.disabled = true; }
+    feedbackEl.textContent = isCorrect ? 'Goed zo!' : `Niet helemaal — het juiste antwoord was "${current.formStr}".`;
+    feedbackEl.className = 'feedback ' + (isCorrect?'good':'bad');
+    scoreEl.textContent = `Score: ${score} / ${total}`;
+    nextBtn.classList.add('show');
+  }
+
+  root.addEventListener('click', (e)=>{
+    const t = e.target;
+    if(t.dataset && t.dataset.role==='lp-cn' && !t.disabled) t.classList.toggle('active');
+    if(t.dataset && t.dataset.role==='lp-g' && !t.disabled){
+      root.querySelectorAll('[data-role="lp-g"]').forEach(b=>b.classList.remove('active'));
+      t.classList.add('active');
+    }
+  });
+
+  nextBtn.addEventListener('click', next);
+  next();
+}
+
 function laNounOefenen(){
   const cats = {
     decl1: { title:'1e verbuigingsgroep', sub:'femina-type', words: LA_DECL1, forms:(w)=>decl1(w.lat.slice(0,-1)), vertaalFn: laPhraseQuestion },
@@ -6606,6 +6817,9 @@ function splitAlternatives(s){
   if(bits.length !== 2) return [s];
   const left = bits[0].trim(), right = bits[1].trim();
   if(!left || !right) return [s];
+  // Als de linkerkant al op zichzelf een complete zin is (eindigt op . ! ?),
+  // zijn dit twee losstaande volledige alternatieven — niet samenvoegen.
+  if(/[.!?]$/.test(left)) return [left, right];
   const leftWords = left.split(/\s+/);
   const rightWords = right.split(/\s+/);
   const lastRight = rightWords[rightWords.length-1];
@@ -6614,32 +6828,46 @@ function splitAlternatives(s){
   const suffix = m[2] || '';
   const n = rightCoreWords.length;
   if(n===0) return [left, right];
+  let result;
   if(leftWords.length <= n){
     // Gedeeld STAARTwoord (bijv. "in/ naar Nederland" -> "in Nederland" / "naar Nederland"):
     // links is korter, dus de laatste woorden van rechts vormen een gedeelde staart.
     const sharedTail = rightCoreWords.slice(leftWords.length);
     const altRight = rightCoreWords.slice(0, leftWords.length);
     const tailStr = sharedTail.length ? ' ' + sharedTail.join(' ') : '';
-    return [
+    result = [
       leftWords.join(' ') + tailStr + suffix,
       altRight.join(' ') + tailStr + suffix
     ];
+  } else {
+    const altLeft = leftWords.slice(leftWords.length-n);
+    const prefixWords = leftWords.slice(0, leftWords.length-n);
+    result = [
+      [...prefixWords, ...altLeft].join(' ') + suffix,
+      [...prefixWords, ...rightCoreWords].join(' ') + suffix
+    ];
   }
-  const altLeft = leftWords.slice(leftWords.length-n);
-  const prefixWords = leftWords.slice(0, leftWords.length-n);
-  return [
-    [...prefixWords, ...altLeft].join(' ') + suffix,
-    [...prefixWords, ...rightCoreWords].join(' ') + suffix
-  ];
+  // Veiligheidscheck: als het samenvoegen een herhaald woord oplevert (bijv.
+  // "ik ik drum"), was de aanname over een gedeeld voor-/staartstuk fout —
+  // val dan terug op de twee kanten los, zonder samenvoegen.
+  const hasDupe = result.some(r => /\b(\w+)\s+\1\b/i.test(r));
+  if(hasDupe) return [left, right];
+  return result;
 }
 function normalizeNl(nl){
-  // Split on comma (synonyms: "veelkleurig, bont"), then split each part
-  // on slash via splitAlternatives (either/or alternatives, sentence-aware).
   const cleaned = nl.replace(/\([^)]*\)/g,'');
   const out = [];
-  cleaned.split(',').map(s=>s.trim()).filter(Boolean).forEach(part=>{
-    splitAlternatives(part).forEach(v=>{ if(v) out.push(v.trim().toLowerCase()); });
-  });
+  if(cleaned.includes('/')){
+    // Bevat de tekst een "/", behandel 'm als één geheel (het kan een volledige
+    // zin met een komma erin zijn — die komma is dan gewone interpunctie, geen
+    // synoniem-scheiding).
+    splitAlternatives(cleaned.trim()).forEach(v=>{ if(v) out.push(v.trim().toLowerCase()); });
+  } else {
+    // Geen "/": een komma scheidt hier wél synoniemen (bijv. "veelkleurig, bont").
+    cleaned.split(',').map(s=>s.trim()).filter(Boolean).forEach(part=>{
+      out.push(part.toLowerCase());
+    });
+  }
   return out;
 }
 function normAnswer(s){ return s.trim().toLowerCase(); }
@@ -7240,10 +7468,11 @@ function renderLessonDetail(chapters){
 
   if(lessenSelection.special){
     const sc = SPECIAL_CONTENT[lessenSelection.special];
+    const extraBtn = lessenSelection.special==='la-nouns' ? `<button class="next-btn show" data-role="special-oefen2" style="margin-left:8px;">Naamval herkennen &amp; vormen →</button>` : '';
     return `<div id="${wrapId}">
       <button class="back-btn" data-role="lessen-back" style="display:inline-block;">← Hoofdstukken</button>
       ${sc.leren()}
-      <div style="margin-top:20px;"><button class="next-btn show" data-role="special-oefen">Oefenen →</button></div>
+      <div style="margin-top:20px;"><button class="next-btn show" data-role="special-oefen">Oefenen →</button>${extraBtn}</div>
       <div data-role="special-quiz" style="margin-top:16px;"></div>
     </div>`;
   }
@@ -7277,6 +7506,12 @@ function initLessonDetail(wrapId, chapters){
     root.querySelector('[data-role="special-oefen"]').addEventListener('click', ()=>{
       root.querySelector('[data-role="special-quiz"]').innerHTML = sc.oefenen();
     });
+    const oefen2 = root.querySelector('[data-role="special-oefen2"]');
+    if(oefen2){
+      oefen2.addEventListener('click', ()=>{
+        root.querySelector('[data-role="special-quiz"]').innerHTML = renderLaParseOefenen();
+      });
+    }
     return;
   }
 
