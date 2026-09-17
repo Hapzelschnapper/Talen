@@ -166,6 +166,7 @@
   @media (max-width:480px){.options{grid-template-columns:1fr;}}
   .opt{font-family:'Nunito',sans-serif;font-size:.98rem;font-weight:700;background:var(--card-2);border:1px solid rgba(217,164,65,0.3);color:var(--ink);border-radius:var(--radius);padding:11px;cursor:pointer;}
   .opt.active{background:var(--gold);border-color:var(--gold);color:#221c15;}
+  .ending{font-weight:800;color:var(--gold);text-decoration:underline;text-decoration-color:var(--gold-dim);text-underline-offset:2px;}
   .opt:hover:not(:disabled){border-color:var(--gold);}
   .opt.correct{background:var(--good);border-color:var(--good);color:#fff;}
   .opt.wrong{background:var(--bad);border-color:var(--bad);color:#fff;}
@@ -231,7 +232,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.64</div>
+<div class="version-badge">v1.67</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -308,6 +309,13 @@ function tableHTML(colHeaders, rowHeaders, cellFn, caption){
   });
   html += '</tbody></table></div>';
   return html;
+}
+// Splitst een volledige vorm in een stam (plain) + uitgang (dikgedrukt/gekleurd/onderstreept).
+// 'form' moet beginnen met 'stem'; is dat niet zo, dan wordt de hele vorm getoond zonder opsplitsing.
+function hl(stem, form){
+  if(!form.startsWith(stem)) return form;
+  const ending = form.slice(stem.length);
+  return ending ? `${stem}<span class="ending">${ending}</span>` : stem;
 }
 
 /* ================= LATIN: NOUN ENGINE ================= */
@@ -2850,6 +2858,7 @@ function frPresentER(stem){ return [stem+'e',stem+'es',stem+'e',stem+'ons',stem+
 function frPresentIR(stem){ return [stem+'is',stem+'is',stem+'it',stem+'issons',stem+'issez',stem+'issent']; }
 function frPresentRE(stem){ return [stem+'s',stem+'s',stem,stem+'ons',stem+'ez',stem+'ent']; }
 const FR_AVOIR = ['ai','as','a','avons','avez','ont'];
+const FR_ETRE = ['suis','es','est','sommes','êtes','sont'];
 function frPasseCompose(participle){ return FR_AVOIR.map(a=>a+' '+participle); }
 const PERSON_LABEL_FR = ['je','tu','il/elle','nous','vous','ils/elles'];
 
@@ -5028,6 +5037,9 @@ function laNounLeren(){
 
   <h2>Verbuigingsgroepen</h2>
   <p>Je herkent de verbuigingsgroep van een woord aan de genitief enkelvoud: <em>-ae</em> (1e), <em>-i</em> (2e), <em>-is</em> (3e).</p>
+  <div class="note">
+    <strong>Hoe kom je aan de stam?</strong> Haal bij de genitief enkelvoud de uitgang (<em>-ae</em>, <em>-i</em> of <em>-is</em>) weg — wat overblijft is de stam. Bijv. <em>femin<span class="ending">ae</span></em> → stam <em>femin-</em>; <em>serv<span class="ending">i</span></em> → stam <em>serv-</em>; <em>reg<span class="ending">is</span></em> → stam <em>reg-</em>. Aan die stam plak je vervolgens de <span class="ending">naamvalsuitgang</span> (hieronder dikgedrukt en onderstreept). Let op: bij de 3e verbuigingsgroep wijkt de nominativus vaak af van dit patroon (bijv. <em>rex</em> i.p.v. <em>reg + s</em>) — die vorm moet je apart leren.
+  </div>
   ${LA_VUISTREGELS_HTML}
 
   <h3>1e verbuigingsgroep — femina, feminae (de vrouw)</h3>
@@ -5036,7 +5048,7 @@ function laNounLeren(){
     {label:'Acc.',color:'var(--acc)'},{label:'Abl.',color:'var(--abl)'}
   ], (r,c)=>{
     const f = decl1('femin'); const keys=['nomSg','genSg','datSg','accSg','ablSg','nomPl','genPl','datPl','accPl','ablPl'];
-    return f[keys[r + (c*5)]];
+    return hl('femin', f[keys[r + (c*5)]]);
   })}
 
   <h3>2e verbuigingsgroep — mannelijk: servus, servi / onzijdig: donum, doni</h3>
@@ -5046,7 +5058,7 @@ function laNounLeren(){
   ], (r,c)=>{
     const keys=['nomSg','genSg','datSg','accSg','ablSg','nomPl','genPl','datPl','accPl','ablPl'];
     const m = decl2m('serv');
-    return c===0 ? m[keys[r]] : m[keys[r+5]];
+    return hl('serv', c===0 ? m[keys[r]] : m[keys[r+5]]);
   })}
   ${tableHTML(['donum (o.) ev','donum mv'], [
     {label:'Nom.',color:'var(--nom)'},{label:'Gen.',color:'var(--gen)'},{label:'Dat.',color:'var(--dat)'},
@@ -5054,7 +5066,7 @@ function laNounLeren(){
   ], (r,c)=>{
     const keys=['nomSg','genSg','datSg','accSg','ablSg','nomPl','genPl','datPl','accPl','ablPl'];
     const n = decl2n('don');
-    return c===0 ? n[keys[r]] : n[keys[r+5]];
+    return hl('don', c===0 ? n[keys[r]] : n[keys[r+5]]);
   })}
   <div class="note">Bij onzijdige woorden zijn nominatief en accusatief altijd gelijk.</div>
 
@@ -5065,7 +5077,7 @@ function laNounLeren(){
   ], (r,c)=>{
     const keys=['nomSg','genSg','datSg','accSg','ablSg','nomPl','genPl','datPl','accPl','ablPl'];
     const m = decl3('rex','reg');
-    return c===0 ? m[keys[r]] : m[keys[r+5]];
+    return hl('reg', c===0 ? m[keys[r]] : m[keys[r+5]]);
   })}
   ${tableHTML(['nomen (o.) ev','nomen mv'], [
     {label:'Nom.',color:'var(--nom)'},{label:'Gen.',color:'var(--gen)'},{label:'Dat.',color:'var(--dat)'},
@@ -5073,7 +5085,7 @@ function laNounLeren(){
   ], (r,c)=>{
     const keys=['nomSg','genSg','datSg','accSg','ablSg','nomPl','genPl','datPl','accPl','ablPl'];
     const n = decl3n('nomen','nomin');
-    return c===0 ? n[keys[r]] : n[keys[r+5]];
+    return hl('nomin', c===0 ? n[keys[r]] : n[keys[r+5]]);
   })}
 
   <h3>Bijvoeglijke naamwoorden — bonus, bona, bonum</h3>
@@ -5715,17 +5727,26 @@ function frVerbLeren(){
   return `
   <h2>Werkwoordsvervoeging in het Frans</h2>
   <p>Deze cursus oefent twee tijden: het <strong>présent</strong> (tegenwoordige tijd) en de <strong>passé composé</strong> (voltooid verleden tijd, gevormd met <em>avoir</em> + voltooid deelwoord). Er zijn drie regelmatige groepen, herkenbaar aan de infinitief.</p>
-  <h3>-er werkwoorden — bijv. parler (praten)</h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? frPresentER('parl')[r] : frPasseCompose('parlé')[r])}
-  <h3>-ir werkwoorden — bijv. finir (eindigen)</h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? frPresentIR('fin')[r] : frPasseCompose('fini')[r])}
-  <h3>-re werkwoorden — bijv. vendre (verkopen)</h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? frPresentRE('vend')[r] : frPasseCompose('vendu')[r])}
+  <div class="note">
+    <strong>Hoe kom je aan de stam?</strong> Bij regelmatige werkwoorden haal je de infinitiefuitgang (<em>-er</em>, <em>-ir</em> of <em>-re</em>) van de infinitief af — wat overblijft is de stam. Bijv. <em>parl<span class="ending">er</span></em> → stam <em>parl-</em>; <em>fin<span class="ending">ir</span></em> → stam <em>fin-</em>; <em>vend<span class="ending">re</span></em> → stam <em>vend-</em>. Aan die stam plak je vervolgens de <span class="ending">uitgang</span> (hieronder dikgedrukt en onderstreept) die bij de persoon (ik/jij/hij...) hoort.
+  </div>
+  <h3>avoir (hebben)</h3>
+  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_AVOIR[r] : frPasseCompose('eu')[r])}
+  <h3>être (zijn)</h3>
+  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_ETRE[r] : frPasseCompose('été')[r])}
+  <div class="note"><em>avoir</em> en <em>être</em> zijn onregelmatige werkwoorden — hun vormen moet je uit het hoofd leren, ze hebben geen vaste stam+uitgang zoals hieronder. Ook hun eigen passé composé wordt met <em>avoir</em> gevormd: <em>j'ai eu</em>, <em>j'ai été</em>. <em>avoir</em> is bovendien het hulpwerkwoord waarmee de passé composé van de meeste andere werkwoorden gevormd wordt.</div>
+  <h3>-er werkwoorden — bijv. parler (praten), stam <em>parl-</em></h3>
+  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('parl', frPresentER('parl')[r]) : FR_AVOIR[r] + ' ' + hl('parl','parlé'))}
+  <h3>-ir werkwoorden — bijv. finir (eindigen), stam <em>fin-</em></h3>
+  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('fin', frPresentIR('fin')[r]) : FR_AVOIR[r] + ' ' + hl('fin','fini'))}
+  <h3>-re werkwoorden — bijv. vendre (verkopen), stam <em>vend-</em></h3>
+  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('vend', frPresentRE('vend')[r]) : FR_AVOIR[r] + ' ' + hl('vend','vendu'))}
   <div class="note">Het voltooid deelwoord: <em>-er</em> → <em>-é</em>, <em>-ir</em> → <em>-i</em>, <em>-re</em> → <em>-u</em>. Deze cursus gebruikt alleen werkwoorden die <em>avoir</em> als hulpwerkwoord nemen.</div>
   `;
 }
 function frVerbOefenen(){
   const cats = {
+    avoir_etre: { title:'avoir & être', sub:'présent & passé composé', words: [{fr:'avoir',nl:'hebben',stem:''},{fr:'être',nl:'zijn',stem:''}], forms:(w)=>{ const out={}; const pres = w.fr==='avoir' ? FR_AVOIR : FR_ETRE; const pc = frPasseCompose(w.fr==='avoir' ? 'eu' : 'été'); pres.forEach((f,i)=>out['pres'+i]=f); pc.forEach((f,i)=>out['pc'+i]=f); return out; } },
     er: { title:'-er werkwoorden', sub:'parler-type', words: FR_ER, forms:(w)=>{ const out={}; frPresentER(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'é').forEach((f,i)=>out['pc'+i]=f); return out; } },
     ir: { title:'-ir werkwoorden', sub:'finir-type', words: FR_IR, forms:(w)=>{ const out={}; frPresentIR(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'i').forEach((f,i)=>out['pc'+i]=f); return out; } },
     re: { title:'-re werkwoorden', sub:'vendre-type', words: FR_RE, forms:(w)=>{ const out={}; frPresentRE(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'u').forEach((f,i)=>out['pc'+i]=f); return out; } }
