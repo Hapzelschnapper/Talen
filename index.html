@@ -272,6 +272,16 @@
   }
   .chapter-header .mastery-badge{margin:0 8px;}
   .sub-btn.has-badge{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .word-level{
+    flex:none;display:inline-flex;align-items:center;justify-content:center;
+    width:18px;height:18px;border-radius:50%;margin-left:4px;
+    font-family:'Nunito',sans-serif;font-weight:800;font-size:.68rem;color:#221c15;
+    vertical-align:middle;
+  }
+  .word-level.word-level-none{
+    background:transparent;border:1px dashed var(--ink-faint);color:var(--ink-faint);font-weight:700;
+  }
+  table td .word-level{margin-left:0;}
   .placeholder .big{font-family:'Cinzel',serif;color:var(--gold);font-size:1.1rem;margin-bottom:8px;}
 
   footer{text-align:center;color:var(--ink-faint);font-size:.8rem;margin-top:50px;}
@@ -280,7 +290,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.70</div>
+<div class="version-badge">v1.72</div>
 <div id="student-badge"></div>
 <div class="wrap">
   <header>
@@ -7134,6 +7144,16 @@ function masteryBadgeHtml(stats){
   return `<span class="mastery-badge" style="background:${color};" title="Beheersing: ${rounded}/10 (${stats.practiced}/${stats.total} woorden geoefend)">${rounded}</span>`;
 }
 
+// Niveau per los woord (1-5, laag-hoog), afgeleid uit dezelfde SRS-box als de paragraafbadge.
+function srsLevelForBox(box){ return Math.max(1, Math.min(5, Math.round(1 + box * (4 / (SRS_INTERVALS_DAYS.length - 1))))); }
+function wordLevelBadgeHtml(langCode, word){
+  const box = srsBoxFor(langCode, word);
+  if(box === null) return `<span class="word-level word-level-none" title="Nog niet geoefend">–</span>`;
+  const level = srsLevelForBox(box);
+  const color = srsMasteryColor(srsScoreForBox(box));
+  return `<span class="word-level" style="background:${color};" title="Niveau ${level}/5">${level}</span>`;
+}
+
 /* ================= GITHUB-SYNC (SRS-voortgang delen tussen apparaten) ================= */
 const GH_CFG_KEY = 'talenapp_gh_sync_v1';
 function ghConfigLoad(){ try{ return JSON.parse(localStorage.getItem(GH_CFG_KEY) || 'null'); } catch(e){ return null; } }
@@ -7425,7 +7445,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
 
   let catKey = null;
   let direction = 'both';
-  let score=0,total=0,streak=0,current=null,hintTaps=0;
+  let score=0,total=0,streak=0,current=null,hintTaps=0,awaitingNext=false;
 
   Object.keys(cats).forEach(key=>{
     const cat = cats[key];
@@ -7448,7 +7468,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     catKey = key;
     if(catGrid) Array.from(catGrid.children).forEach((b,i)=>b.classList.toggle('active', Object.keys(cats)[i]===key));
     const cat = cats[key];
-    wordGrid.innerHTML = cat.words.map(w=>`<div><b>${lemmaFn(w)}</b> — ${w.nl}</div>`).join('');
+    wordGrid.innerHTML = cat.words.map(w=>`<div><b>${lemmaFn(w)}</b> — ${w.nl} ${cat.srsLang ? wordLevelBadgeHtml(cat.srsLang, w) : ''}</div>`).join('');
     wordlistWrap.open = false;
     dirToggle.style.display = 'flex';
     quizArea.style.display = 'block';
@@ -7577,6 +7597,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     }
     current.answerMode = mcOnly ? 'mc' : (Math.random()<(1/3) ? 'mc' : 'input');
     hintTaps = 0;
+    awaitingNext = false;
 
     questionText.innerHTML = current.questionHTML;
     hintText.textContent = '';
@@ -7584,6 +7605,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     nextBtn.classList.remove('show');
     textInput.value=''; textInput.disabled=false;
     checkBtn.disabled=false;
+    checkBtn.textContent='Controleer';
 
     const wEl = questionText.querySelector('.w');
     if(wEl && !noHints){
@@ -7629,6 +7651,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
   }
 
   function submitInput(){
+    if(awaitingNext){ nextQuestion(); return; }
     if(textInput.disabled) return;
     checkAnswer(textInput.value, null);
   }
@@ -7677,7 +7700,13 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
       feedbackEl.className='feedback bad';
     }
     updateScore();
-    nextBtn.classList.add('show');
+    if(current.answerMode==='mc'){
+      nextBtn.classList.add('show');
+    } else {
+      awaitingNext = true;
+      checkBtn.disabled = false;
+      checkBtn.textContent = 'Doorgaan →';
+    }
   }
 
   function checkAnswer(chosen, btnEl){
@@ -7968,7 +7997,7 @@ function renderLessonDetail(chapters){
   const bodyHtml = s.richLeren
     ? s.richLeren()
     : `<h3>${c.title} — ${s.title}</h3>
-       <div class="table-scroll"><table><thead><tr><th>${LANG_NAMES[currentLang]}</th><th>Nederlands</th></tr></thead><tbody>${s.words.map(w=>`<tr><td>${w.target}</td><td>${w.nl}</td></tr>`).join('')}</tbody></table></div>`;
+       <div class="table-scroll"><table><thead><tr><th>${LANG_NAMES[currentLang]}</th><th>Nederlands</th><th></th></tr></thead><tbody>${s.words.map(w=>`<tr><td>${w.target}</td><td>${w.nl}</td><td>${wordLevelBadgeHtml(currentLang.toUpperCase(), w)}</td></tr>`).join('')}</tbody></table></div>`;
   return `<div id="${wrapId}">
     <button class="back-btn" data-role="lessen-back" style="display:inline-block;">← Hoofdstukken</button>
     ${bodyHtml}
@@ -8241,7 +8270,7 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
     ? shuffle([...Array(Math.ceil(totalQ/2)).fill('nl2target'), ...Array(Math.floor(totalQ/2)).fill('target2nl')])
     : Array(totalQ).fill(direction);
 
-  let idx=0, wrong=0, current=null;
+  let idx=0, wrong=0, current=null, awaitingNext=false;
   const itemWord = itemLabel==='letter' ? 'de letter' : 'het woord';
 
   function buildQ(dir, word){
@@ -8266,6 +8295,8 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
     feedbackEl.textContent=''; feedbackEl.className='feedback';
     nextBtn.classList.remove('show');
     inputEl.value=''; inputEl.disabled=false; checkBtn.disabled=false;
+    checkBtn.textContent='Controleer';
+    awaitingNext=false;
     if(current.mode==='mc'){
       inputRow.style.display='none';
       if(elKeyboardSlot) elKeyboardSlot.innerHTML = '';
@@ -8295,7 +8326,13 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
     feedbackEl.innerHTML = (isCorrect ? 'Goed zo!' : `Niet helemaal — het juiste antwoord is "${current.correct}".`) + aiNote + exactNote;
     feedbackEl.className = 'feedback ' + (isCorrect?'good':'bad');
     idx++;
-    nextBtn.classList.add('show');
+    if(current.mode==='mc'){
+      nextBtn.classList.add('show');
+    } else {
+      awaitingNext = true;
+      checkBtn.disabled = false;
+      checkBtn.textContent = idx>=totalQ ? 'Bekijk resultaat →' : 'Doorgaan →';
+    }
   }
 
   function answer(val){
@@ -8318,8 +8355,12 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
     finalizeAnswer(false, false);
   }
 
-  checkBtn.addEventListener('click', ()=>{ if(!inputEl.disabled) answer(inputEl.value); });
-  inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter' && !inputEl.disabled) answer(inputEl.value); });
+  function submitInput(){
+    if(awaitingNext){ next(); return; }
+    if(!inputEl.disabled) answer(inputEl.value);
+  }
+  checkBtn.addEventListener('click', submitInput);
+  inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter') submitInput(); });
   nextBtn.addEventListener('click', next);
 
   function showResult(){
