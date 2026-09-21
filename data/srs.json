@@ -119,6 +119,94 @@
     "box": 1,
     "due": "2026-09-22"
   },
+  "H::FR|romantique|romantisch": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|sportif / sportive|sportief": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|montrer|laten zien": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "H::FR|quand|wanneer / toen": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|possible|mogelijk": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|On aime bien jouer à la console.|Wij gamen graag.": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|rigoler|lachen": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "H::FR|l'amour m|de liefde": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|Je ne comprends pas.|Ik begrijp het niet.": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "H::FR|avoir envie de|zin hebben in": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "H::FR|jaloux / jalouse|jaloers": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "H::FR|le vêtement|het kledingstuk": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|donner|geven": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "H::FR|l'anniversaire|de verjaardag": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|Réponds-moi vite!|Antwoord snel!": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|là-bas|daar": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|trouver|vinden": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|donc|dus": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|sérieux / sérieuse|serieus": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|arriver|aankomen": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "H::FR|parce que|omdat": {
+    "box": 0,
+    "due": "2026-09-21"
+  },
+  "Freek::FR|formidable|geweldig": {
+    "box": 0,
+    "due": "2026-09-21"
+  },
   "FR|romantique|romantisch": {
     "box": 1,
     "due": "2026-09-18"
@@ -200,10 +288,6 @@
     "due": "2026-09-18"
   },
   "FR|parce que|omdat": {
-    "box": 0,
-    "due": "2026-09-21"
-  },
-  "Freek::FR|formidable|geweldig": {
     "box": 0,
     "due": "2026-09-21"
   }
