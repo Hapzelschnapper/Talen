@@ -1,4 +1,112 @@
 {
+  "Freek::FR|romantique|romantisch": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|sportif / sportive|sportief": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|montrer|laten zien": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "Freek::FR|quand|wanneer / toen": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|possible|mogelijk": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|On aime bien jouer à la console.|Wij gamen graag.": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|rigoler|lachen": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "Freek::FR|l'amour m|de liefde": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|Je ne comprends pas.|Ik begrijp het niet.": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "Freek::FR|avoir envie de|zin hebben in": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "Freek::FR|jaloux / jalouse|jaloers": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "Freek::FR|le vêtement|het kledingstuk": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|donner|geven": {
+    "box": 0,
+    "due": "2026-09-17"
+  },
+  "Freek::FR|l'anniversaire|de verjaardag": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|Réponds-moi vite!|Antwoord snel!": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|là-bas|daar": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|trouver|vinden": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|donc|dus": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|sérieux / sérieuse|serieus": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|arriver|aankomen": {
+    "box": 1,
+    "due": "2026-09-18"
+  },
+  "Freek::FR|parce que|omdat": {
+    "box": 0,
+    "due": "2026-09-21"
+  },
+  "Freek::FR|la découverte|de ontdekking": {
+    "box": 1,
+    "due": "2026-09-22"
+  },
+  "Freek::FR|la rentrée|de eerste schooldag": {
+    "box": 0,
+    "due": "2026-09-21"
+  },
+  "Freek::FR|en Espagne|in/naar Spanje": {
+    "box": 0,
+    "due": "2026-09-21"
+  },
+  "Freek::FR|content(e)|tevreden": {
+    "box": 1,
+    "due": "2026-09-22"
+  },
+  "Freek::FR|aux Pays-Bas|in/naar Nederland": {
+    "box": 1,
+    "due": "2026-09-22"
+  },
+  "Freek::FR|en train|met de trein": {
+    "box": 1,
+    "due": "2026-09-22"
+  },
   "FR|romantique|romantisch": {
     "box": 1,
     "due": "2026-09-18"
