@@ -167,6 +167,20 @@
   .opt{font-family:'Nunito',sans-serif;font-size:.98rem;font-weight:700;background:var(--card-2);border:1px solid rgba(217,164,65,0.3);color:var(--ink);border-radius:var(--radius);padding:11px;cursor:pointer;}
   .opt.active{background:var(--gold);border-color:var(--gold);color:#221c15;}
   .ending{font-weight:800;color:var(--gold);text-decoration:underline;text-decoration-color:var(--gold-dim);text-underline-offset:2px;}
+  .gloss-term{cursor:pointer;border-bottom:1px dotted var(--gold);color:inherit;}
+  .gloss-term:hover,.gloss-term.active{color:var(--gold);}
+  .gloss-popover{
+    position:fixed;z-index:200;max-width:280px;background:var(--card);
+    border:1px solid rgba(217,164,65,0.4);border-radius:var(--radius);
+    padding:10px 30px 10px 12px;font-family:'Nunito',sans-serif;font-size:.85rem;
+    color:var(--ink-dim);line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .gloss-popover strong{display:block;color:var(--gold);font-family:'Cinzel',serif;font-size:.95rem;margin-bottom:4px;}
+  .gloss-popover .gloss-close{
+    position:absolute;top:6px;right:8px;background:none;border:none;color:var(--ink-faint);
+    font-size:.9rem;cursor:pointer;padding:2px;
+  }
+  .gloss-popover .gloss-close:hover{color:var(--ink);}
   .opt:hover:not(:disabled){border-color:var(--gold);}
   .opt.correct{background:var(--good);border-color:var(--good);color:#fff;}
   .opt.wrong{background:var(--bad);border-color:var(--bad);color:#fff;}
@@ -218,7 +232,7 @@
   }
   .back-btn:hover{border-color:var(--gold);}
   .settings-btn{
-    position:fixed;top:66px;right:10px;z-index:50;
+    position:fixed;top:36px;right:10px;z-index:50;
     width:36px;height:36px;border-radius:50%;
     background:var(--card);border:1px solid rgba(217,164,65,0.3);color:var(--gold);
     font-size:1.1rem;cursor:pointer;line-height:1;
@@ -251,6 +265,13 @@
   .settings-modal input:focus{outline:2px solid var(--gold);outline-offset:1px;}
   .settings-status{color:var(--ink-faint);font-size:.8rem;margin:6px 0 14px;}
   .settings-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+  .student-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .student-pick-btn{
+    background:var(--card-2);border:1px solid rgba(217,164,65,0.35);border-radius:999px;
+    color:var(--ink);font-family:'Nunito',sans-serif;font-weight:700;font-size:.95rem;
+    padding:10px 18px;cursor:pointer;
+  }
+  .student-pick-btn:hover{border-color:var(--gold);background:var(--gold);color:#221c15;}
   .settings-actions .back-btn{margin-bottom:0;}
   .ai-check-note{color:var(--ink-faint);font-weight:400;font-size:.85em;font-style:italic;}
   .exact-note{display:block;color:var(--ink-faint);font-weight:400;font-size:.85em;margin-top:2px;}
@@ -286,12 +307,10 @@
 
   footer{text-align:center;color:var(--ink-faint);font-size:.8rem;margin-top:50px;}
   .version-badge{position:fixed;top:8px;right:10px;font-family:'Nunito',sans-serif;font-size:.72rem;color:var(--ink-faint);background:var(--card);border:1px solid rgba(217,164,65,0.2);border-radius:999px;padding:3px 9px;z-index:50;}
-  #student-badge{position:fixed;top:34px;right:10px;font-family:'Nunito',sans-serif;font-size:.72rem;color:var(--gold);background:var(--card);border:1px solid rgba(217,164,65,0.25);border-radius:999px;padding:3px 9px;z-index:50;display:none;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 </style>
 </head>
 <body>
-<div class="version-badge">v1.72</div>
-<div id="student-badge"></div>
+<div class="version-badge">v1.77</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -377,6 +396,72 @@ function hl(stem, form){
   const ending = form.slice(stem.length);
   return ending ? `${stem}<span class="ending">${ending}</span>` : stem;
 }
+
+/* ================= GRAMMATICALE TERMEN: klikbare uitleg ================= */
+const GLOSS = {
+  praesens: { term:'Praesens', text:'Tegenwoordige tijd: iets gebeurt nu. Bijv. "ik loop".' },
+  imperfectum: { term:'Imperfectum', text:'Onvoltooid verleden tijd: iets was aan de gang en duurde even. Bijv. "ik liep".' },
+  perfectum: { term:'Perfectum', text:'Voltooid verleden tijd: iets gebeurde op een bepaald moment en is nu klaar. Bijv. "ik heb gelopen" / "ik liep".' },
+  plusquamperfectum: { term:'Plusquamperfectum', text:'Verder-dan-voltooid verleden tijd: iets was al klaar vóórdat er iets anders gebeurde. Bijv. "ik had gelopen".' },
+  futurum: { term:'Futurum', text:'Toekomende tijd: iets gaat nog gebeuren. Bijv. "ik zal lopen".' },
+  infinitivus: { term:'Infinitivus', text:'De onbepaalde wijs: het "hele werkwoord" zoals het in een woordenboek staat, zonder persoon of tijd. Bijv. "lopen".' },
+  imperativus: { term:'Imperativus', text:'De gebiedende wijs: een bevel of opdracht. Bijv. "Loop!"' },
+  nominativus: { term:'Nominativus', text:'De 1e naamval: het onderwerp van de zin. Vraag: wie/wat?' },
+  genitivus: { term:'Genitivus', text:'De 2e naamval: drukt bezit uit, een "van"-relatie.' },
+  dativus: { term:'Dativus', text:'De 3e naamval: het meewerkend voorwerp — aan/voor wie?' },
+  accusativus: { term:'Accusativus', text:'De 4e naamval: het lijdend voorwerp.' },
+  ablativus: { term:'Ablativus', text:'De 5e naamval (alleen Latijn): drukt "door, met, vanaf, in" uit.' },
+  vocativus: { term:'Vocativus', text:'De aanspreekvorm, waarmee je iemand rechtstreeks aanspreekt. Meestal gelijk aan de nominativus.' },
+  prasens_de: { term:'Präsens', text:'Duitse tegenwoordige tijd: iets gebeurt nu. Bijv. "ich mache".' },
+  perfekt_de: { term:'Perfekt', text:'Duitse voltooid tegenwoordige tijd: hoe je in het Duits meestal over het verleden spreekt. Bijv. "ich habe gemacht".' },
+  infinitif_fr: { term:'Infinitif', text:'De onbepaalde wijs in het Frans: het "hele werkwoord" zoals het in een woordenboek staat. Bijv. "parler".' },
+  present_fr: { term:'Présent', text:'Franse tegenwoordige tijd: iets gebeurt nu. Bijv. "je parle".' },
+  passe_compose_fr: { term:'Passé composé', text:'De Franse voltooid verleden tijd, gevormd met avoir/être + voltooid deelwoord. Bijv. "j\'ai parlé".' },
+  aoristus: { term:'Aoristus', text:'Een Griekse verleden tijd voor een afgeronde gebeurtenis (vergelijkbaar met het perfectum).' },
+  vervoeging: { term:'Vervoeging', text:'De manier waarop een werkwoord van vorm verandert per persoon en per tijd.' },
+  verbuiging: { term:'Verbuiging (declinatie)', text:'De manier waarop een zelfstandig naamwoord van vorm verandert per naamval en aantal.' }
+};
+// Wikkelt een grammaticale term in een klikbaar element dat bij klikken een kort uitlegpopupje toont.
+function gloss(key, label){
+  const g = GLOSS[key];
+  if(!g) return label != null ? label : key;
+  return `<span class="gloss-term" data-gloss="${key}">${label != null ? label : g.term}</span>`;
+}
+function closeGlossPopover(){
+  if(window.__glossPopover){ window.__glossPopover.remove(); window.__glossPopover = null; }
+  document.querySelectorAll('.gloss-term.active').forEach(el=>el.classList.remove('active'));
+}
+function showGlossPopover(targetEl, key){
+  const g = GLOSS[key];
+  closeGlossPopover();
+  if(!g) return;
+  targetEl.classList.add('active');
+  const pop = document.createElement('div');
+  pop.className = 'gloss-popover';
+  pop.innerHTML = `<button class="gloss-close" aria-label="Sluiten">✕</button><strong>${g.term}</strong>${g.text}`;
+  document.body.appendChild(pop);
+  const rect = targetEl.getBoundingClientRect();
+  const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+  const popW = Math.min(280, vw - 20);
+  pop.style.maxWidth = popW + 'px';
+  let left = rect.left; if(left + popW > vw - 10) left = Math.max(10, vw - popW - 10);
+  let top = rect.bottom + 6; if(top + pop.offsetHeight > vh - 10) top = Math.max(10, rect.top - pop.offsetHeight - 6);
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  pop.querySelector('.gloss-close').addEventListener('click', (e)=>{ e.stopPropagation(); closeGlossPopover(); });
+  window.__glossPopover = pop;
+}
+document.addEventListener('click', (e)=>{
+  const termEl = e.target.closest && e.target.closest('.gloss-term');
+  if(termEl){
+    e.stopPropagation();
+    const isSame = termEl.classList.contains('active');
+    closeGlossPopover();
+    if(!isSame) showGlossPopover(termEl, termEl.dataset.gloss);
+    return;
+  }
+  if(window.__glossPopover && !e.target.closest('.gloss-popover')) closeGlossPopover();
+});
 
 /* ================= LATIN: NOUN ENGINE ================= */
 function decl1(stem){ return { nomSg:stem+'a',genSg:stem+'ae',datSg:stem+'ae',accSg:stem+'am',ablSg:stem+'a',
@@ -5055,10 +5140,8 @@ backBtn.addEventListener('click', ()=>{
   render();
 });
 document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
-updateStudentBadge();
-ensureStudentName(()=>{
-  if(ghConfigured()) ghSyncNow().then(()=>render());
-});
+srsMigrateToSingleUser();
+if(ghConfigured()) ghSyncNow().then(()=>render());
 
 function renderNav(){
   document.body.dataset.lang = currentLang;
@@ -5072,13 +5155,13 @@ function laNounLeren(){
   <p>In het Latijn verandert een zelfstandig naamwoord van vorm afhankelijk van zijn functie in de zin. Daardoor mag de woordvolgorde vrij zijn: <em>"Canis puellam videt."</em> en <em>"Puellam canis videt."</em> betekenen allebei <strong>"De hond ziet het meisje"</strong> — het is <em>puellam</em> (met -m) dat vertelt wie er wordt gezien.</p>
   <div class="note">De woordvolgorde is niet helemaal betekenisloos: het woord dat <strong>vooraan</strong> in de zin staat, krijgt de meeste nadruk. <em>"Puellam canis videt"</em> legt dus net iets meer klemtoon op <em>puellam</em> (het meisje) dan de neutrale volgorde <em>"Canis puellam videt"</em> — ongeveer zoals in het Nederlands "Het méisje ziet de hond" net iets anders klinkt dan "De hond ziet het meisje".</div>
 
-  <div class="case-card" style="--case-color:var(--nom);"><h3>Nominativus</h3><p class="func">Onderwerp. Vraag: <em>wie/wat?</em></p><div class="ex"><div class="la"><b>Puella</b> cantat.</div><div class="nl">Het meisje zingt.</div></div></div>
-  <div class="case-card" style="--case-color:var(--gen);"><h3>Genitivus</h3><p class="func">Bezit, een "van"-relatie.</p><div class="ex"><div class="la">Liber <b>puellae</b> in mensa est.</div><div class="nl">Het boek van het meisje ligt op tafel.</div></div></div>
-  <div class="case-card" style="--case-color:var(--dat);"><h3>Dativus</h3><p class="func">Meewerkend voorwerp: aan/voor wie?</p><div class="ex"><div class="la">Pater <b>filio</b> librum dat.</div><div class="nl">Vader geeft een boek aan zijn zoon.</div></div></div>
-  <div class="case-card" style="--case-color:var(--acc);"><h3>Accusativus</h3><p class="func">Lijdend voorwerp.</p><div class="ex"><div class="la">Puella <b>canem</b> videt.</div><div class="nl">Het meisje ziet de hond.</div></div></div>
-  <div class="case-card" style="--case-color:var(--abl);"><h3>Ablativus</h3><p class="func">Door, met, vanaf, in.</p><div class="ex"><div class="la">Miles <b>gladio</b> pugnat.</div><div class="nl">De soldaat vecht met een zwaard.</div></div></div>
+  <div class="case-card" style="--case-color:var(--nom);"><h3>${gloss('nominativus')}</h3><p class="func">Onderwerp. Vraag: <em>wie/wat?</em></p><div class="ex"><div class="la"><b>Puella</b> cantat.</div><div class="nl">Het meisje zingt.</div></div></div>
+  <div class="case-card" style="--case-color:var(--gen);"><h3>${gloss('genitivus')}</h3><p class="func">Bezit, een "van"-relatie.</p><div class="ex"><div class="la">Liber <b>puellae</b> in mensa est.</div><div class="nl">Het boek van het meisje ligt op tafel.</div></div></div>
+  <div class="case-card" style="--case-color:var(--dat);"><h3>${gloss('dativus')}</h3><p class="func">Meewerkend voorwerp: aan/voor wie?</p><div class="ex"><div class="la">Pater <b>filio</b> librum dat.</div><div class="nl">Vader geeft een boek aan zijn zoon.</div></div></div>
+  <div class="case-card" style="--case-color:var(--acc);"><h3>${gloss('accusativus')}</h3><p class="func">Lijdend voorwerp.</p><div class="ex"><div class="la">Puella <b>canem</b> videt.</div><div class="nl">Het meisje ziet de hond.</div></div></div>
+  <div class="case-card" style="--case-color:var(--abl);"><h3>${gloss('ablativus')}</h3><p class="func">Door, met, vanaf, in.</p><div class="ex"><div class="la">Miles <b>gladio</b> pugnat.</div><div class="nl">De soldaat vecht met een zwaard.</div></div></div>
 
-  <div class="note">Een zesde naamval, de <strong>vocativus</strong> (aanspreekvorm), is meestal gelijk aan de nominativus — behalve bij woorden op <em>-us</em>/<em>-ius</em> in de 2e verbuigingsgroep: <em>servus → serve</em>, <em>filius → fili</em>.</div>
+  <div class="note">Een zesde naamval, de ${gloss('vocativus','vocativus')} (aanspreekvorm), is meestal gelijk aan de nominativus — behalve bij woorden op <em>-us</em>/<em>-ius</em> in de 2e verbuigingsgroep: <em>servus → serve</em>, <em>filius → fili</em>.</div>
 
   <h3>Alle naamvallen in één zin</h3>
   <div class="card">
@@ -5092,11 +5175,11 @@ function laNounLeren(){
     </p>
     <p style="margin-bottom:12px;color:var(--ink);">De slaven van de koning bouwen voor de stad een muur met rotsblokken.</p>
     <p style="margin:0;color:var(--ink-dim);font-size:.88rem;line-height:1.9;">
-      <span style="color:var(--nom);font-weight:700;">Servi</span> — nominativus, het onderwerp ("de slaven")<br>
-      <span style="color:var(--gen);font-weight:700;">regis</span> — genitivus, bezit ("van de koning")<br>
-      <span style="color:var(--dat);font-weight:700;">urbi</span> — dativus, ten gunste van ("voor de stad")<br>
-      <span style="color:var(--acc);font-weight:700;">murum</span> — accusativus, het lijdend voorwerp ("een muur")<br>
-      <span style="color:var(--abl);font-weight:700;">saxis</span> — ablativus, het middel ("met rotsblokken")
+      <span style="color:var(--nom);font-weight:700;">Servi</span> — ${gloss('nominativus','nominativus')}, het onderwerp ("de slaven")<br>
+      <span style="color:var(--gen);font-weight:700;">regis</span> — ${gloss('genitivus','genitivus')}, bezit ("van de koning")<br>
+      <span style="color:var(--dat);font-weight:700;">urbi</span> — ${gloss('dativus','dativus')}, ten gunste van ("voor de stad")<br>
+      <span style="color:var(--acc);font-weight:700;">murum</span> — ${gloss('accusativus','accusativus')}, het lijdend voorwerp ("een muur")<br>
+      <span style="color:var(--abl);font-weight:700;">saxis</span> — ${gloss('ablativus','ablativus')}, het middel ("met rotsblokken")
     </p>
   </div>
 
@@ -5444,20 +5527,80 @@ function laVerbLeren(){
   function conjTable(title, exampleLat, engineFn, stem){
     const f = engineFn(stem);
     return `<h3>${title} — ${exampleLat}</h3>` + tableHTML(
-      ['praesens','imperfectum','futurum'],
+      [gloss('praesens'), gloss('imperfectum'), gloss('futurum')],
       PERSON_LABEL_LA.map(p=>({label:p})),
       (r,c)=>{ const t=['pres','impf','fut'][c]; return f[t][r]; }
     );
   }
   return `
   <h2>Werkwoordsvervoeging in het Latijn</h2>
-  <p>Latijnse werkwoorden veranderen van vorm per persoon (ik, jij, hij/zij/het, wij, jullie, zij) én per tijd. Deze cursus behandelt drie tijden: de <strong>praesens</strong> (tegenwoordige tijd), het <strong>imperfectum</strong> (onvoltooid verleden tijd) en het <strong>futurum</strong> (toekomende tijd).</p>
+  <p>Latijnse werkwoorden veranderen van vorm per persoon (ik, jij, hij/zij/het, wij, jullie, zij) én per tijd. Deze cursus behandelt drie tijden: de ${gloss('praesens','praesens')} (tegenwoordige tijd), het ${gloss('imperfectum','imperfectum')} (onvoltooid verleden tijd) en het ${gloss('futurum','futurum')} (toekomende tijd). Tik op een tijd voor korte uitleg.</p>
   <p>Er zijn vier vervoegingsgroepen, herkenbaar aan de infinitief: <em>-are</em> (1e), <em>-ere</em> met lange e (2e), <em>-ere</em> met korte e (3e) en <em>-ire</em> (4e).</p>
   ${conjTable('1e vervoeging', 'amare (houden van)', conj1, 'am')}
   ${conjTable('2e vervoeging', 'monere (waarschuwen)', conj2, 'mon')}
   ${conjTable('3e vervoeging', 'regere (regeren)', conj3, 'reg')}
   ${conjTable('4e vervoeging', 'audire (horen)', conj4, 'aud')}
-  <div class="note">Het perfectum (voltooid verleden tijd) heeft vaak een onregelmatige stam per werkwoord en komt in deze cursus nog niet aan bod.</div>
+  <div class="note">Het ${gloss('perfectum','perfectum')} (voltooid verleden tijd) heeft vaak een onregelmatige stam per werkwoord en komt in deze cursus nog niet aan bod in de oefeningen hierboven — zie het volledige tijdenoverzicht hieronder voor hoe het wél werkt.</div>
+  ${laTijdenOverzicht()}
+  `;
+}
+
+// Volledig overzicht van alle vier Latijnse werkwoordstijden (praesens, imperfectum, perfectum,
+// plusquamperfectum) plus imperativus en infinitivus, voor de vier stamtypes (a/e/i/mk) en de
+// onregelmatige werkwoorden esse en posse — als vaste theorie-tabellen (geen oefenmateriaal,
+// want de perfectumstam is bij veel werkwoorden onregelmatig en moet per woord geleerd worden).
+function laTijdenOverzicht(){
+  const types = [
+    { label:'a-stam', ex:'vocare (roepen)', stem:'voc', pres:conj1('voc').pres, impf:conj1('voc').impf, perfStem:'vocav', impEv:'voca', impMv:'vocate', inf:'vocare' },
+    { label:'e-stam', ex:'terrere (bang maken)', stem:'terr', pres:conj2('terr').pres, impf:conj2('terr').impf, perfStem:'terru', impEv:'terre', impMv:'terrete', inf:'terrere' },
+    { label:'i-stam', ex:'audire (horen)', stem:'aud', pres:conj4('aud').pres, impf:conj4('aud').impf, perfStem:'audiv', impEv:'audi', impMv:'audite', inf:'audire' },
+    { label:'mk-stam', ex:'vincere (overwinnen)', stem:'vinc', pres:conj3('vinc').pres, impf:conj3('vinc').impf, perfStem:'vic', impEv:'vince', impMv:'vincite', inf:'vincere' },
+    { label:'esse', ex:'esse (zijn)', stem:'', pres:['sum','es','est','sumus','estis','sunt'], impf:['eram','eras','erat','eramus','eratis','erant'], perfStem:'fu', impEv:'es', impMv:'este', inf:'esse' },
+    { label:'posse', ex:'posse (kunnen)', stem:'', pres:['possum','potes','potest','possumus','potestis','possunt'], impf:['poteram','poteras','poterat','poteramus','poteratis','poterant'], perfStem:'potu', impEv:'—', impMv:'—', inf:'posse' }
+  ];
+  types.forEach(t=>{
+    t.perf = [t.perfStem+'i', t.perfStem+'isti', t.perfStem+'it', t.perfStem+'imus', t.perfStem+'istis', t.perfStem+'erunt'];
+    t.ppf = [t.perfStem+'eram', t.perfStem+'eras', t.perfStem+'erat', t.perfStem+'eramus', t.perfStem+'eratis', t.perfStem+'erant'];
+  });
+  function cell(t, tenseKey, ri){
+    const form = t[tenseKey][ri];
+    const stemForHl = (tenseKey==='perf' || tenseKey==='ppf') ? t.perfStem : t.stem;
+    return stemForHl ? hl(stemForHl, form) : form;
+  }
+  function tijdTable(tenseKey, tenseTitle, extraRows){
+    let html = `<h3>${tenseTitle}</h3><div class="table-scroll"><table><thead><tr><th></th>${types.map(t=>`<th>${t.label}</th>`).join('')}</tr></thead><tbody>`;
+    PERSON_LABEL_LA.forEach((p,ri)=>{
+      html += `<tr><th>${p}</th>${types.map(t=>`<td>${cell(t,tenseKey,ri)}</td>`).join('')}</tr>`;
+    });
+    if(extraRows){
+      extraRows.forEach(([label,key])=>{
+        html += `<tr><th>${label}</th>${types.map(t=>`<td>${t[key]}</td>`).join('')}</tr>`;
+      });
+    }
+    html += '</tbody></table></div>';
+    return html;
+  }
+  return `
+  <h2>Overzicht: de vier werkwoordstijden op een rij</h2>
+  <p class="settings-hint" style="margin-top:-8px;">Tik op een onderstreepte term voor een korte uitleg.</p>
+  <table><thead><tr><th>tijd</th><th>afkorting</th><th>betekenis</th></tr></thead><tbody>
+  <tr><th>${gloss('praesens')}</th><td>ott</td><td>ik <strong>ben</strong> aan het doen</td></tr>
+  <tr><th>${gloss('imperfectum')}</th><td>ovt</td><td>ik <strong>was</strong> aan het doen (en het duurde even)</td></tr>
+  <tr><th>${gloss('perfectum')}</th><td>vtt</td><td>ik <strong>deed</strong> (en het was een moment)</td></tr>
+  <tr><th>${gloss('plusquamperfectum')}</th><td>vvt</td><td>ik <strong>had gedaan</strong> (en het is allang voorbij)</td></tr>
+  </tbody></table>
+  <div class="card">
+    <p style="margin-bottom:6px;">Ik <strong>loop</strong>. — ${gloss('praesens','praesens')}</p>
+    <p style="margin-bottom:6px;">Ik <strong>liep</strong>. Toen <strong>heeft</strong> er een vogel op me <strong>gepoept</strong>. — ${gloss('imperfectum','imperfectum')}, gevolgd door ${gloss('perfectum','perfectum')}</p>
+    <p style="margin-bottom:0;">Ik <strong>had</strong> een eind <strong>gelopen</strong>, voordat ik naar school kwam. — ${gloss('plusquamperfectum','plusquamperfectum')}</p>
+  </div>
+  <p>Er zijn vier stammen: op <strong>a</strong>, <strong>e</strong>, <strong>i</strong> of op een <strong>medeklinker</strong> (mk-stam). Je vindt de stam door bij de ${gloss('infinitivus','infinitief')} de uitgang <em>-re</em> weg te halen: <span class="w">terre<span class="ending">re</span></span> → stam <em>terre-</em>. Aan de stam plak je de persoonsuitgangen <strong>-o -s -t -mus -tis -nt</strong> (${gloss('praesens','praesens')}) of <strong>-(e)ba-</strong> + uitgang (${gloss('imperfectum','imperfectum')}). <em>esse</em> (zijn) en <em>posse</em> (kunnen) zijn onregelmatig en volgen dit patroon niet.</p>
+  ${tijdTable('pres', gloss('praesens','Praesens') + ' (tegenwoordige tijd)', [[gloss('imperativus','imperativus') + ' enkelvoud','impEv'],[gloss('imperativus','imperativus') + ' meervoud','impMv'],[gloss('infinitivus','infinitivus'),'inf']])}
+  ${tijdTable('impf', gloss('imperfectum','Imperfectum') + ' (onvoltooid verleden tijd)')}
+  <div class="note">Het ${gloss('perfectum','perfectum')} heeft een andere stam dan het praesens! Vaak zit er een letter (<em>v</em> of <em>u</em>) aan de praesensstam vastgeplakt: <em>voca-</em> → <em>vocav-</em>. Perfectumuitgangen: <strong>-i -isti -it -imus -istis -erunt</strong>. Je herkent het perfectum dus aan de andere stam én andere uitgangen! Let op: bij veel werkwoorden van de mk-stam (3e vervoeging) is de perfectumstam onregelmatig en moet je die per woord apart leren — <span class="w">vincere</span> → <span class="w">vic-</span> is daar zelf ook een voorbeeld van.</div>
+  ${tijdTable('perf', gloss('perfectum','Perfectum') + ' (voltooid verleden tijd)')}
+  ${tijdTable('ppf', gloss('plusquamperfectum','Plusquamperfectum') + ' (voltooid verleden tijd, verder terug)')}
+  <div class="note">Plusquamperfectum = perfectumstam + <strong>era</strong> + persoonsuitgang.</div>
   `;
 }
 
@@ -5483,10 +5626,10 @@ function deNounLeren(){
   <h2>Naamvallen in het Duits</h2>
   <p>Het Duits kent vier naamvallen: Nominativ, Genitiv, Dativ en Akkusativ (geen ablatief). Het grote verschil met het Latijn: de naamval is bij de meeste woorden niet te zien aan het zelfstandig naamwoord zelf, maar aan het <strong>lidwoord</strong> ervoor.</p>
   <table><thead><tr><th>naamval</th><th>functie</th></tr></thead><tbody>
-  <tr style="--case-color:var(--nom);"><th>Nominativ</th><td>onderwerp</td></tr>
-  <tr style="--case-color:var(--gen);"><th>Genitiv</th><td>bezit ('van')</td></tr>
-  <tr style="--case-color:var(--dat);"><th>Dativ</th><td>meewerkend voorwerp ('aan/voor')</td></tr>
-  <tr style="--case-color:var(--acc);"><th>Akkusativ</th><td>lijdend voorwerp</td></tr>
+  <tr style="--case-color:var(--nom);"><th>${gloss('nominativus','Nominativ')}</th><td>onderwerp</td></tr>
+  <tr style="--case-color:var(--gen);"><th>${gloss('genitivus','Genitiv')}</th><td>bezit ('van')</td></tr>
+  <tr style="--case-color:var(--dat);"><th>${gloss('dativus','Dativ')}</th><td>meewerkend voorwerp ('aan/voor')</td></tr>
+  <tr style="--case-color:var(--acc);"><th>${gloss('accusativus','Akkusativ')}</th><td>lijdend voorwerp</td></tr>
   </tbody></table>
   <div class="note">Nederlandse lesmethodes nummeren de naamvallen vaak: <strong>1e naamval</strong> = Nominativ, <strong>2e naamval</strong> = Genitiv, <strong>3e naamval</strong> = Dativ, <strong>4e naamval</strong> = Akkusativ. Je herkent ze ook door te vragen: <em>wie/wat</em> + persoonsvorm → 1e naamval (onderwerp); <em>wat</em> + persoonsvorm + onderwerp → 4e naamval (lijdend voorwerp).</div>
   <div class="card">
@@ -5602,7 +5745,7 @@ function deVerbLeren(){
   const strongEx = DE_STRONG_A.find(v=>v.stem==='fahr');
   return `
   <h2>Werkwoordsvervoeging in het Duits</h2>
-  <p>Deze cursus oefent twee tijden: de <strong>Präsens</strong> (tegenwoordige tijd) en het <strong>Perfekt</strong> (de gangbare verleden tijd in gesproken Duits, gevormd met <em>haben</em> + voltooid deelwoord).</p>
+  <p>Deze cursus oefent twee tijden: de ${gloss('prasens_de','Präsens')} (tegenwoordige tijd) en het ${gloss('perfekt_de','Perfekt')} (de gangbare verleden tijd in gesproken Duits, gevormd met <em>haben</em> + voltooid deelwoord).</p>
 
   <h3>haben (hebben) en sein (zijn)</h3>
   <p>Deze twee werkwoorden gebruik je voortdurend, en ze zijn onregelmatig:</p>
@@ -5613,8 +5756,8 @@ function deVerbLeren(){
   })}
   <div class="note">Let op: bij <em>du</em> is het <strong>hast</strong> (niet "habst"), en bij <em>er/sie/es</em> is het <strong>hat</strong> (niet "habt").</div>
 
-  <h3>Präsens — regelmatig, bijv. machen (maken)</h3>
-  ${tableHTML(['Präsens'], PERSON_LABEL_DE.map(p=>({label:p})), (r)=>dePresentForms(ex.stem, ex.needsE)[r])}
+  <h3>${gloss('prasens_de','Präsens')} — regelmatig, bijv. machen (maken)</h3>
+  ${tableHTML([gloss('prasens_de','Präsens')], PERSON_LABEL_DE.map(p=>({label:p})), (r)=>dePresentForms(ex.stem, ex.needsE)[r])}
   <div class="note">Bij stammen op <em>-t</em> of <em>-d</em> (zoals <em>arbeiten</em>) wordt een extra <em>-e-</em> ingevoegd: <em>du arbeit<b>e</b>st, er arbeit<b>e</b>t</em>. Dezelfde extra <em>-e-</em> komt ook voor bij stammen op <em>-m</em>/<em>-n</em> met een medeklinker ervoor, zoals <em>öffnen → du öffnest</em>.</div>
 
   <h3>Werkwoorden met een s-klank aan het eind van de stam</h3>
@@ -5626,8 +5769,8 @@ function deVerbLeren(){
   })}
   <div class="note">Dus: <em>du heißt</em> en <em>du tanzt</em> — niet "heißst" of "tanzst".</div>
 
-  <h3>Perfekt — haben + voltooid deelwoord</h3>
-  ${tableHTML(['Perfekt'], PERSON_LABEL_DE.map(p=>({label:p})), (r)=>dePerfektForms(ex.stem, ex.needsE)[r], 'machen: gemacht')}
+  <h3>${gloss('perfekt_de','Perfekt')} — haben + voltooid deelwoord</h3>
+  ${tableHTML([gloss('perfekt_de','Perfekt')], PERSON_LABEL_DE.map(p=>({label:p})), (r)=>dePerfektForms(ex.stem, ex.needsE)[r], 'machen: gemacht')}
   <p>Het voltooid deelwoord wordt gevormd als <em>ge + stam + t</em> (of <em>+et</em> bij stammen op -t/-d): <em>gemacht, gearbeitet</em>. Deze cursus gebruikt alleen regelmatige werkwoorden met <em>haben</em>.</p>
 
   <h2>Sterke werkwoorden met a → ä</h2>
@@ -5791,21 +5934,21 @@ function frNounOefenen(){
 function frVerbLeren(){
   return `
   <h2>Werkwoordsvervoeging in het Frans</h2>
-  <p>Deze cursus oefent twee tijden: het <strong>présent</strong> (tegenwoordige tijd) en de <strong>passé composé</strong> (voltooid verleden tijd, gevormd met <em>avoir</em> + voltooid deelwoord). Er zijn drie regelmatige groepen, herkenbaar aan de infinitief.</p>
+  <p>Deze cursus oefent twee tijden: het ${gloss('present_fr','présent')} (tegenwoordige tijd) en de ${gloss('passe_compose_fr','passé composé')} (voltooid verleden tijd, gevormd met <em>avoir</em> + voltooid deelwoord). Er zijn drie regelmatige groepen, herkenbaar aan de ${gloss('infinitif_fr','infinitief')}.</p>
   <div class="note">
     <strong>Hoe kom je aan de stam?</strong> Bij regelmatige werkwoorden haal je de infinitiefuitgang (<em>-er</em>, <em>-ir</em> of <em>-re</em>) van de infinitief af — wat overblijft is de stam. Bijv. <em>parl<span class="ending">er</span></em> → stam <em>parl-</em>; <em>fin<span class="ending">ir</span></em> → stam <em>fin-</em>; <em>vend<span class="ending">re</span></em> → stam <em>vend-</em>. Aan die stam plak je vervolgens de <span class="ending">uitgang</span> (hieronder dikgedrukt en onderstreept) die bij de persoon (ik/jij/hij...) hoort.
   </div>
   <h3>avoir (hebben)</h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_AVOIR[r] : frPasseCompose('eu')[r])}
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_AVOIR[r] : frPasseCompose('eu')[r])}
   <h3>être (zijn)</h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_ETRE[r] : frPasseCompose('été')[r])}
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_ETRE[r] : frPasseCompose('été')[r])}
   <div class="note"><em>avoir</em> en <em>être</em> zijn onregelmatige werkwoorden — hun vormen moet je uit het hoofd leren, ze hebben geen vaste stam+uitgang zoals hieronder. Ook hun eigen passé composé wordt met <em>avoir</em> gevormd: <em>j'ai eu</em>, <em>j'ai été</em>. <em>avoir</em> is bovendien het hulpwerkwoord waarmee de passé composé van de meeste andere werkwoorden gevormd wordt.</div>
   <h3>-er werkwoorden — bijv. parler (praten), stam <em>parl-</em></h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('parl', frPresentER('parl')[r]) : FR_AVOIR[r] + ' ' + hl('parl','parlé'))}
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('parl', frPresentER('parl')[r]) : FR_AVOIR[r] + ' ' + hl('parl','parlé'))}
   <h3>-ir werkwoorden — bijv. finir (eindigen), stam <em>fin-</em></h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('fin', frPresentIR('fin')[r]) : FR_AVOIR[r] + ' ' + hl('fin','fini'))}
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('fin', frPresentIR('fin')[r]) : FR_AVOIR[r] + ' ' + hl('fin','fini'))}
   <h3>-re werkwoorden — bijv. vendre (verkopen), stam <em>vend-</em></h3>
-  ${tableHTML(['présent','passé composé'], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('vend', frPresentRE('vend')[r]) : FR_AVOIR[r] + ' ' + hl('vend','vendu'))}
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('vend', frPresentRE('vend')[r]) : FR_AVOIR[r] + ' ' + hl('vend','vendu'))}
   <div class="note">Het voltooid deelwoord: <em>-er</em> → <em>-é</em>, <em>-ir</em> → <em>-i</em>, <em>-re</em> → <em>-u</em>. Deze cursus gebruikt alleen werkwoorden die <em>avoir</em> als hulpwerkwoord nemen.</div>
   `;
 }
@@ -5908,10 +6051,10 @@ function elC3_Naamvallen(){
   <h3>Zelfstandige naamwoorden: uitgang en functie</h3>
   <p>In het Grieks kunnen zelfstandige naamwoorden verschillende uitgangen hebben. Als onderwerp heeft een woord een andere uitgang dan als lijdend voorwerp.</p>
   <h3>Naamvallen en hun functie</h3>
-  <p>Het Grieks kent <strong>vijf naamvallen</strong>: nominativus (1e), genitivus (2e), dativus (3e), accusativus (4e) en vocativus (die meestal gelijk is aan de nominativus). Aan de naamval (dus de uitgang) zie je de functie van het woord in de zin.</p>
+  <p>Het Grieks kent <strong>vijf naamvallen</strong>: ${gloss('nominativus','nominativus')} (1e), ${gloss('genitivus','genitivus')} (2e), ${gloss('dativus','dativus')} (3e), ${gloss('accusativus','accusativus')} (4e) en ${gloss('vocativus','vocativus')} (die meestal gelijk is aan de nominativus). Aan de naamval (dus de uitgang) zie je de functie van het woord in de zin.</p>
   <table><thead><tr><th>Naamval</th><th>Functie</th></tr></thead><tbody>
-  <tr><td>Nominativus</td><td>1. onderwerp (subject) — 2. naamwoordelijk deel van het gezegde bij een vorm van "zijn": <em>Ἡρακλῆς δοῦλός ἐστιν</em> — Herakles is slaaf</td></tr>
-  <tr><td>Accusativus</td><td>lijdend voorwerp (object)</td></tr>
+  <tr><td>${gloss('nominativus')}</td><td>1. onderwerp (subject) — 2. naamwoordelijk deel van het gezegde bij een vorm van "zijn": <em>Ἡρακλῆς δοῦλός ἐστιν</em> — Herakles is slaaf</td></tr>
+  <tr><td>${gloss('accusativus')}</td><td>lijdend voorwerp (object)</td></tr>
   </tbody></table>
   <div class="note">Elke naamval kan meerdere functies hebben — het lidwoord ontbreekt vaak bij het naamwoordelijk deel van het gezegde: <em>θεοὶ οὐκ εἰσὶν ἄνθρωποι</em> — goden zijn geen mensen.</div>
   `;
@@ -6068,7 +6211,7 @@ function elC4_GebruikBijvNw(){
 /* ---- Hoofdstuk 5 ---- */
 function elC5_Genitivus(){
   return `
-  <h3>Genitivus</h3>
+  <h3>${gloss('genitivus')}</h3>
   ${tableHTML(['o-groep (δοῦλος)','o-groep (θηρίον)','α/η-groep (μάχη)','α/η-groep (χώρα)','α/η-groep (δεσπότης)'],[
     {label:'Enkelvoud'},{label:'Meervoud'}
   ], (r,c)=>{
@@ -6086,7 +6229,7 @@ function elC5_Genitivus(){
 }
 function elC5_Dativus(){
   return `
-  <h3>Dativus</h3>
+  <h3>${gloss('dativus')}</h3>
   ${tableHTML(['o-groep (δοῦλος)','o-groep (θηρίον)','α/η-groep (μάχη)','α/η-groep (χώρα)','α/η-groep (δεσπότης)'],[
     {label:'Enkelvoud'},{label:'Meervoud'}
   ], (r,c)=>{
@@ -6132,11 +6275,11 @@ function elC6_Werkwoorden(){
     const vals=[['λῦε','λύετε'],['ποίει','ποιεῖτε']]; return vals[c][r];
   })}
   <div class="note">Bij een gebiedende wijs gebruikt het Grieks de ontkenning μή in plaats van οὐ(κ). ποιεῖ (hij doet) en ποίει (doe!) herken je aan het verschil in accent.</div>
-  <h3>De aangesproken persoon: vocativus</h3>
+  <h3>De aangesproken persoon: ${gloss('vocativus','vocativus')}</h3>
   <p>Het Grieks gebruikt voor de aangesproken persoon meestal de nominativus, vaak voorafgegaan door ὦ (blijft onvertaald). Woorden op -ος en -ης hebben in het enkelvoud een eigen vocativus-uitgang: ἄνθρωπος → ὦ ἄνθρωπε, δεσπότης → ὦ δέσποτα.</p>
   <div class="note">De vocativus meervoud is altijd gelijk aan de nominativus meervoud.</div>
-  <h3>Praesens van εἰμί "zijn"</h3>
-  ${tableHTML(['praesens','imperativus','infinitivus'],[
+  <h3>${gloss('praesens')} van εἰμί "zijn"</h3>
+  ${tableHTML([gloss('praesens'), gloss('imperativus'), gloss('infinitivus')],[
     {label:'1e ev.'},{label:'2e ev.'},{label:'3e ev.'},{label:'1e mv.'},{label:'2e mv.'},{label:'3e mv.'}
   ], (r,c)=>{
     if(c===0) return ['εἰμί','εἶ','ἐστί(ν)','ἐσμέν','ἐστέ','εἰσί(ν)'][r];
@@ -6210,8 +6353,8 @@ function elC7_Autos(){
 /* ---- Hoofdstuk 8 ---- */
 function elC8_Imperfectum(){
   return `
-  <h3>Het imperfectum</h3>
-  <p>Om iets uit het verleden mee te delen, gebruikt het Grieks onder andere het <strong>imperfectum</strong>.</p>
+  <h3>Het ${gloss('imperfectum','imperfectum')}</h3>
+  <p>Om iets uit het verleden mee te delen, gebruikt het Grieks onder andere het ${gloss('imperfectum','imperfectum')}.</p>
   ${tableHTML(['λύω','ποιέω','εἰμί'],[{label:'1e ev.'},{label:'2e ev.'},{label:'3e ev.'},{label:'1e mv.'},{label:'2e mv.'},{label:'3e mv.'}], (r,c)=>{
     const luo=['ἔλυον','ἔλυες','ἔλυε(ν)','ἐλύομεν','ἐλύετε','ἔλυον'];
     const poieo=['ἐποίουν','ἐποίεις','ἐποίει','ἐποιοῦμεν','ἐποιεῖτε','ἐποίουν'];
@@ -6254,7 +6397,7 @@ function elC8_AugmentSamengesteld(){
   <tr><td>ἀποφέρω</td><td>:</td><td>ἀπέφερον</td></tr>
   </tbody></table>
   <div class="note">Uitzondering: περί → περιέβαινον. Bij πρό kan samentrekking van de -ο en het augment ἐ- optreden: προέβαινον of προὔβαινον.</div>
-  <h3>Praesens historicum ("ooggetuigen-praesens")</h3>
+  <h3>${gloss('praesens','Praesens')} historicum ("ooggetuigen-praesens")</h3>
   <p>In een verhaal dat zich in het verleden afspeelt, wordt soms een praesens-vorm gebruikt met een ooggetuigen-effect — alsof we er zelf bij zijn: <em>οἱ θεοὶ ἐξαίφνης τὸν ἄνεμον παύουσιν</em> — de goden laten de wind plotseling ophouden.</p>
   `;
 }
@@ -6315,9 +6458,9 @@ function elC9_GemengdBijvNw(){
 /* ---- Hoofdstuk 10 ---- */
 function elC10_Aoristus(){
   return `
-  <h3>De aoristus</h3>
+  <h3>De ${gloss('aoristus','aoristus')}</h3>
   <p>Naast de praesensstam (waarmee zowel het praesens als het imperfectum wordt gevormd) heeft het Grieks nog andere werkwoordsstammen. Eén daarvan is de <strong>aoristusstam</strong>, waarmee een verleden tijd, gebiedende wijs/imperativus en infinitivus worden gevormd.</p>
-  <h3>Sigmatische aoristus</h3>
+  <h3>Sigmatische ${gloss('aoristus','aoristus')}</h3>
   <p>Bij veel werkwoorden wordt de aoristusstam gevormd door -σα (soms -σ) aan de werkwoordstam toe te voegen. Vanwege de -σ- in alle vormen heet dit de <strong>sigmatische aoristus</strong>.</p>
   ${tableHTML(['indicativus','imperativus','infinitivus'],[{label:'1e ev.'},{label:'2e ev.'},{label:'3e ev.'},{label:'1e mv.'},{label:'2e mv.'},{label:'3e mv.'}], (r,c)=>{
     if(c===0) return ['ἔλυσα','ἔλυσας','ἔλυσε(ν)','ἐλύσαμεν','ἐλύσατε','ἔλυσαν'][r];
@@ -7011,49 +7154,6 @@ function normalizeNl(nl){
 }
 function normAnswer(s){ return s.trim().toLowerCase(); }
 
-/* ================= STUDENTPROFIEL (naam waaronder voortgang wordt bijgehouden) ================= */
-const STUDENT_KEY = 'talenapp_student_v1';
-function getStudentName(){ try{ return localStorage.getItem(STUDENT_KEY) || ''; } catch(e){ return ''; } }
-function setStudentName(name){ try{ localStorage.setItem(STUDENT_KEY, name); } catch(e){ /* opslag niet beschikbaar */ } }
-function updateStudentBadge(){
-  const el = document.getElementById('student-badge');
-  if(!el) return;
-  const name = getStudentName();
-  el.textContent = name ? `👤 ${name}` : '';
-  el.style.display = name ? 'block' : 'none';
-}
-
-// Vraagt bij de allereerste keer openen (nog geen naam bekend) om een naam, en migreert
-// eventuele oudere, naamloze SRS-voortgang naar die naam. Roept daarna onReady() aan.
-function ensureStudentName(onReady){
-  if(getStudentName()){ onReady(); return; }
-  const overlay = document.createElement('div');
-  overlay.className = 'settings-overlay';
-  overlay.innerHTML = `
-    <div class="settings-modal" style="max-width:380px;">
-      <h3>Wie ben je?</h3>
-      <p class="settings-hint">Vul je naam in zodat je eigen oefenvoortgang apart wordt bijgehouden van andere gebruikers van deze app. Je kunt dit later altijd wijzigen via ⚙ Instellingen.</p>
-      <label>Naam<input type="text" data-role="student-name-input" placeholder="bv. Sifra"></label>
-      <div class="settings-actions">
-        <button class="next-btn show" data-role="student-name-save">Doorgaan</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  const input = overlay.querySelector('[data-role="student-name-input"]');
-  function save(){
-    const name = input.value.trim();
-    if(!name) return;
-    setStudentName(name);
-    srsMigrateLegacyKeys(name);
-    updateStudentBadge();
-    overlay.remove();
-    onReady();
-  }
-  overlay.querySelector('[data-role="student-name-save"]').addEventListener('click', save);
-  input.addEventListener('keydown', e=>{ if(e.key==='Enter') save(); });
-  setTimeout(()=>input.focus(), 0);
-}
-
 /* ================= SRS (Leitner) — alleen voor woorden/letters, niet voor vervoegingen/naamvallen ================= */
 const SRS_STORAGE_KEY = 'talenapp_srs_v1';
 const SRS_INTERVALS_DAYS = [0,1,2,4,7,14]; // index = box (0..5)
@@ -7064,23 +7164,25 @@ function srsSaveAll(store){
   try{ localStorage.setItem(SRS_STORAGE_KEY, JSON.stringify(store)); } catch(e){ /* opslag niet beschikbaar, negeren */ }
 }
 function srsToday(){ return new Date().toISOString().slice(0,10); }
-// Sleutel bevat de studentnaam, zodat meerdere personen op hetzelfde apparaat/dezelfde sync-repo
-// elk hun eigen voortgang hebben in plaats van elkaars scores te overschrijven.
 function srsKeyFor(langCode, word){
-  const student = getStudentName() || '_onbekend';
-  return `${student}::${langCode}|${word.target != null ? word.target : word.greek}|${word.nl}`;
+  return `${langCode}|${word.target != null ? word.target : word.greek}|${word.nl}`;
 }
-// Eenmalige migratie: SRS-records die zijn opgeslagen vóór de studentnaam-functie bestond
-// (sleutels zonder "naam::"-voorvoegsel) worden toegewezen aan de eerst ingevulde naam,
-// zodat bestaande voortgang niet verloren gaat.
-function srsMigrateLegacyKeys(name){
+// Eenmalige opschoning: verwijdert een eerder gebruikt "naam::"-voorvoegsel uit SRS-sleutels
+// (van de inmiddels weer verwijderde per-student-functie), zodat alle voortgang weer onder
+// één gedeelde, naamloze set sleutels staat. Bij een dubbele sleutel wint de hoogste SRS-box.
+function srsMigrateToSingleUser(){
   const store = srsLoadAll();
   let changed = false;
   const migrated = {};
   Object.keys(store).forEach(k=>{
-    if(k.includes('::')){ migrated[k] = store[k]; return; }
-    migrated[`${name}::${k}`] = store[k];
-    changed = true;
+    const idx = k.indexOf('::');
+    const plainKey = idx === -1 ? k : k.slice(idx + 2);
+    if(idx !== -1) changed = true;
+    const rec = store[k];
+    const existing = migrated[plainKey];
+    if(!existing || (rec.box !== existing.box ? rec.box > existing.box : rec.due >= existing.due)){
+      migrated[plainKey] = rec;
+    }
   });
   if(changed) srsSaveAll(migrated);
 }
@@ -7295,14 +7397,7 @@ function openSettingsModal(){
   overlay.innerHTML = `
     <div class="settings-modal">
       <button class="settings-close" data-role="settings-close" aria-label="Sluiten">✕</button>
-      <h3>Student</h3>
-      <p class="settings-hint">De naam waaronder je oefenvoortgang (SRS-scores) wordt bijgehouden. Wissel je van naam, dan zie je de (aparte) voortgang van die naam — handig als meerdere mensen dit apparaat of deze sync gebruiken.</p>
-      <label>Naam<input type="text" data-role="student-name" value="${getStudentName()}" placeholder="bv. Sifra"></label>
-      <div class="settings-actions">
-        <button class="next-btn show" data-role="student-save">Opslaan</button>
-      </div>
-
-      <h3 style="margin-top:28px;">GitHub-synchronisatie</h3>
+      <h3>GitHub-synchronisatie</h3>
       <p class="settings-hint">Slaat je oefenvoortgang op als JSON-bestand in een GitHub-repo, zodat je op meerdere apparaten met dezelfde voortgang verder kunt. Maak op <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/tokens</a> een fijnmazig token met alleen "Contents: Read and write"-rechten op déze ene repo — de sleutel wordt alleen lokaal in je browser bewaard.</p>
       <label>GitHub-gebruikersnaam<input type="text" data-role="gh-owner" value="${ghCfg.owner||'Hapzelschnapper'}" placeholder="bv. freekvanvoorst"></label>
       <label>Repository<input type="text" data-role="gh-repo" value="${ghCfg.repo||'Talen'}"></label>
@@ -7325,15 +7420,6 @@ function openSettingsModal(){
       </div>
     </div>`;
   document.body.appendChild(overlay);
-
-  overlay.querySelector('[data-role="student-save"]').addEventListener('click', ()=>{
-    const name = overlay.querySelector('[data-role="student-name"]').value.trim();
-    if(!name) return;
-    setStudentName(name);
-    updateStudentBadge();
-    render();
-    if(ghConfigured()) ghSyncNow().then(()=>render());
-  });
 
   const ghStatusEl = overlay.querySelector('[data-role="gh-status"]');
   ghOnStateChange = ()=>{ if(ghStatusEl) ghStatusEl.textContent = formatSyncStatus(); };
@@ -7808,7 +7894,7 @@ function getChapters(lang){
   const vt = (title)=> title;
   if(lang==='la'){
     chapters.push({ id:'la-nouns', title:'Naamvallen', special:'la-nouns' });
-    chapters.push({ id:'la-verbs', title:'Vervoegingen', special:'la-verbs' });
+    chapters.push({ id:'la-verbs', title:'Werkwoorden', special:'la-verbs' });
     LA_VOCAB.forEach((c,ci)=>{
       chapters.push({ id:'c'+ci, title:c.title, subs: c.subs.map(s=>({ title:vt(s.title), words: normWords(s.words,'lat') })) });
     });
