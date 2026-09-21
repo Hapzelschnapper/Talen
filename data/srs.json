@@ -88,8 +88,8 @@
     "due": "2026-09-22"
   },
   "Freek::FR|la rentrée|de eerste schooldag": {
-    "box": 0,
-    "due": "2026-09-21"
+    "box": 1,
+    "due": "2026-09-22"
   },
   "Freek::FR|en Espagne|in/naar Spanje": {
     "box": 0,
@@ -104,6 +104,18 @@
     "due": "2026-09-22"
   },
   "Freek::FR|en train|met de trein": {
+    "box": 1,
+    "due": "2026-09-22"
+  },
+  "Freek::FR|parler|praten, spreken": {
+    "box": 1,
+    "due": "2026-09-22"
+  },
+  "Freek::FR|rencontrer|ontmoeten": {
+    "box": 0,
+    "due": "2026-09-21"
+  },
+  "Freek::FR|Comme vas-tu?|Hoe gaat het met je?": {
     "box": 1,
     "due": "2026-09-22"
   },
@@ -191,8 +203,8 @@
     "box": 0,
     "due": "2026-09-21"
   },
-  "Freek::FR|parler|praten, spreken": {
-    "box": 1,
-    "due": "2026-09-22"
+  "Freek::FR|formidable|geweldig": {
+    "box": 0,
+    "due": "2026-09-21"
   }
 }
