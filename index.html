@@ -253,6 +253,7 @@
   .settings-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
   .settings-actions .back-btn{margin-bottom:0;}
   .ai-check-note{color:var(--ink-faint);font-weight:400;font-size:.85em;font-style:italic;}
+  .exact-note{display:block;color:var(--ink-faint);font-weight:400;font-size:.85em;margin-top:2px;}
   .chapter-header.select-mode{display:flex;align-items:center;gap:10px;}
   .chk-box{
     width:20px;height:20px;flex:none;border:2px solid var(--gold-dim);border-radius:4px;
@@ -278,7 +279,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.68</div>
+<div class="version-badge">v1.69</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -7209,8 +7210,8 @@ function openSettingsModal(){
       <button class="settings-close" data-role="settings-close" aria-label="Sluiten">✕</button>
       <h3>GitHub-synchronisatie</h3>
       <p class="settings-hint">Slaat je oefenvoortgang op als JSON-bestand in een GitHub-repo, zodat je op meerdere apparaten met dezelfde voortgang verder kunt. Maak op <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/tokens</a> een fijnmazig token met alleen "Contents: Read and write"-rechten op déze ene repo — de sleutel wordt alleen lokaal in je browser bewaard.</p>
-      <label>GitHub-gebruikersnaam<input type="text" data-role="gh-owner" value="${ghCfg.owner||''}" placeholder="bv. freekvanvoorst"></label>
-      <label>Repository<input type="text" data-role="gh-repo" value="${ghCfg.repo||'Hapzelschnapper'}"></label>
+      <label>GitHub-gebruikersnaam<input type="text" data-role="gh-owner" value="${ghCfg.owner||'Hapzelschnapper'}" placeholder="bv. freekvanvoorst"></label>
+      <label>Repository<input type="text" data-role="gh-repo" value="${ghCfg.repo||'Talen'}"></label>
       <label>Bestandspad<input type="text" data-role="gh-path" value="${ghCfg.path||'data/srs.json'}"></label>
       <label>Branch<input type="text" data-role="gh-branch" value="${ghCfg.branch||'main'}"></label>
       <label>Personal Access Token<input type="password" data-role="gh-token" value="${ghCfg.token||''}" placeholder="github_pat_…" autocomplete="off"></label>
@@ -7567,17 +7568,18 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     }
 
     const aiNote = aiApproved ? ' <span class="ai-check-note">(geaccepteerd na AI-check)</span>' : '';
+    const exactNote = (current.answerMode==='input') ? ` <span class="exact-note">Exacte notatie: "${current.correct}"</span>` : '';
     if(credit==='full'){
       score++; streak++;
-      feedbackEl.innerHTML = (current.bonusInfo ? `Goed zo! (dit betekent: "${current.bonusInfo}")` : 'Goed zo!') + aiNote;
+      feedbackEl.innerHTML = (current.bonusInfo ? `Goed zo! (dit betekent: "${current.bonusInfo}")` : 'Goed zo!') + aiNote + exactNote;
       feedbackEl.className='feedback good';
     } else if(credit==='half'){
       score += 0.5; streak=0;
-      feedbackEl.innerHTML = (current.bonusInfo ? `Half goed — je gebruikte een hint. (dit betekent: "${current.bonusInfo}")` : 'Half goed — je gebruikte een hint.') + aiNote;
+      feedbackEl.innerHTML = (current.bonusInfo ? `Half goed — je gebruikte een hint. (dit betekent: "${current.bonusInfo}")` : 'Half goed — je gebruikte een hint.') + aiNote + exactNote;
       feedbackEl.className='feedback good';
     } else if(reason==='toomanyhints'){
       streak=0;
-      feedbackEl.innerHTML = (current.bonusInfo ? `Goed zo! (dit betekent: "${current.bonusInfo}")` : 'Goed zo!') + aiNote;
+      feedbackEl.innerHTML = (current.bonusInfo ? `Goed zo! (dit betekent: "${current.bonusInfo}")` : 'Goed zo!') + aiNote + exactNote;
       feedbackEl.className='feedback good';
     } else {
       streak=0;
@@ -8206,7 +8208,8 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
     if(!isCorrect) wrong++;
     srsRecord(langCode, current.word, isCorrect);
     const aiNote = aiApproved ? ' <span class="ai-check-note">(geaccepteerd na AI-check)</span>' : '';
-    feedbackEl.innerHTML = (isCorrect ? 'Goed zo!' : `Niet helemaal — het juiste antwoord is "${current.correct}".`) + aiNote;
+    const exactNote = (isCorrect && current.mode==='input') ? ` <span class="exact-note">Exacte notatie: "${current.correct}"</span>` : '';
+    feedbackEl.innerHTML = (isCorrect ? 'Goed zo!' : `Niet helemaal — het juiste antwoord is "${current.correct}".`) + aiNote + exactNote;
     feedbackEl.className = 'feedback ' + (isCorrect?'good':'bad');
     idx++;
     nextBtn.classList.add('show');
