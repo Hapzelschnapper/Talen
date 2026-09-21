@@ -78,5 +78,9 @@
   "FR|arriver|aankomen": {
     "box": 1,
     "due": "2026-09-18"
+  },
+  "FR|parce que|omdat": {
+    "box": 0,
+    "due": "2026-09-21"
   }
 }
