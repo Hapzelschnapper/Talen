@@ -218,7 +218,7 @@
   }
   .back-btn:hover{border-color:var(--gold);}
   .settings-btn{
-    position:fixed;top:50px;right:10px;z-index:50;
+    position:fixed;top:66px;right:10px;z-index:50;
     width:36px;height:36px;border-radius:50%;
     background:var(--card);border:1px solid rgba(217,164,65,0.3);color:var(--gold);
     font-size:1.1rem;cursor:pointer;line-height:1;
@@ -276,10 +276,12 @@
 
   footer{text-align:center;color:var(--ink-faint);font-size:.8rem;margin-top:50px;}
   .version-badge{position:fixed;top:8px;right:10px;font-family:'Nunito',sans-serif;font-size:.72rem;color:var(--ink-faint);background:var(--card);border:1px solid rgba(217,164,65,0.2);border-radius:999px;padding:3px 9px;z-index:50;}
+  #student-badge{position:fixed;top:34px;right:10px;font-family:'Nunito',sans-serif;font-size:.72rem;color:var(--gold);background:var(--card);border:1px solid rgba(217,164,65,0.25);border-radius:999px;padding:3px 9px;z-index:50;display:none;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 </style>
 </head>
 <body>
-<div class="version-badge">v1.69</div>
+<div class="version-badge">v1.70</div>
+<div id="student-badge"></div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -5043,7 +5045,10 @@ backBtn.addEventListener('click', ()=>{
   render();
 });
 document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
-if(ghConfigured()) ghSyncNow().then(()=>render());
+updateStudentBadge();
+ensureStudentName(()=>{
+  if(ghConfigured()) ghSyncNow().then(()=>render());
+});
 
 function renderNav(){
   document.body.dataset.lang = currentLang;
@@ -6996,6 +7001,49 @@ function normalizeNl(nl){
 }
 function normAnswer(s){ return s.trim().toLowerCase(); }
 
+/* ================= STUDENTPROFIEL (naam waaronder voortgang wordt bijgehouden) ================= */
+const STUDENT_KEY = 'talenapp_student_v1';
+function getStudentName(){ try{ return localStorage.getItem(STUDENT_KEY) || ''; } catch(e){ return ''; } }
+function setStudentName(name){ try{ localStorage.setItem(STUDENT_KEY, name); } catch(e){ /* opslag niet beschikbaar */ } }
+function updateStudentBadge(){
+  const el = document.getElementById('student-badge');
+  if(!el) return;
+  const name = getStudentName();
+  el.textContent = name ? `👤 ${name}` : '';
+  el.style.display = name ? 'block' : 'none';
+}
+
+// Vraagt bij de allereerste keer openen (nog geen naam bekend) om een naam, en migreert
+// eventuele oudere, naamloze SRS-voortgang naar die naam. Roept daarna onReady() aan.
+function ensureStudentName(onReady){
+  if(getStudentName()){ onReady(); return; }
+  const overlay = document.createElement('div');
+  overlay.className = 'settings-overlay';
+  overlay.innerHTML = `
+    <div class="settings-modal" style="max-width:380px;">
+      <h3>Wie ben je?</h3>
+      <p class="settings-hint">Vul je naam in zodat je eigen oefenvoortgang apart wordt bijgehouden van andere gebruikers van deze app. Je kunt dit later altijd wijzigen via ⚙ Instellingen.</p>
+      <label>Naam<input type="text" data-role="student-name-input" placeholder="bv. Sifra"></label>
+      <div class="settings-actions">
+        <button class="next-btn show" data-role="student-name-save">Doorgaan</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const input = overlay.querySelector('[data-role="student-name-input"]');
+  function save(){
+    const name = input.value.trim();
+    if(!name) return;
+    setStudentName(name);
+    srsMigrateLegacyKeys(name);
+    updateStudentBadge();
+    overlay.remove();
+    onReady();
+  }
+  overlay.querySelector('[data-role="student-name-save"]').addEventListener('click', save);
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') save(); });
+  setTimeout(()=>input.focus(), 0);
+}
+
 /* ================= SRS (Leitner) — alleen voor woorden/letters, niet voor vervoegingen/naamvallen ================= */
 const SRS_STORAGE_KEY = 'talenapp_srs_v1';
 const SRS_INTERVALS_DAYS = [0,1,2,4,7,14]; // index = box (0..5)
@@ -7006,7 +7054,26 @@ function srsSaveAll(store){
   try{ localStorage.setItem(SRS_STORAGE_KEY, JSON.stringify(store)); } catch(e){ /* opslag niet beschikbaar, negeren */ }
 }
 function srsToday(){ return new Date().toISOString().slice(0,10); }
-function srsKeyFor(langCode, word){ return `${langCode}|${word.target != null ? word.target : word.greek}|${word.nl}`; }
+// Sleutel bevat de studentnaam, zodat meerdere personen op hetzelfde apparaat/dezelfde sync-repo
+// elk hun eigen voortgang hebben in plaats van elkaars scores te overschrijven.
+function srsKeyFor(langCode, word){
+  const student = getStudentName() || '_onbekend';
+  return `${student}::${langCode}|${word.target != null ? word.target : word.greek}|${word.nl}`;
+}
+// Eenmalige migratie: SRS-records die zijn opgeslagen vóór de studentnaam-functie bestond
+// (sleutels zonder "naam::"-voorvoegsel) worden toegewezen aan de eerst ingevulde naam,
+// zodat bestaande voortgang niet verloren gaat.
+function srsMigrateLegacyKeys(name){
+  const store = srsLoadAll();
+  let changed = false;
+  const migrated = {};
+  Object.keys(store).forEach(k=>{
+    if(k.includes('::')){ migrated[k] = store[k]; return; }
+    migrated[`${name}::${k}`] = store[k];
+    changed = true;
+  });
+  if(changed) srsSaveAll(migrated);
+}
 function srsIsDue(langCode, word){
   const store = srsLoadAll();
   const rec = store[srsKeyFor(langCode, word)];
@@ -7208,7 +7275,14 @@ function openSettingsModal(){
   overlay.innerHTML = `
     <div class="settings-modal">
       <button class="settings-close" data-role="settings-close" aria-label="Sluiten">✕</button>
-      <h3>GitHub-synchronisatie</h3>
+      <h3>Student</h3>
+      <p class="settings-hint">De naam waaronder je oefenvoortgang (SRS-scores) wordt bijgehouden. Wissel je van naam, dan zie je de (aparte) voortgang van die naam — handig als meerdere mensen dit apparaat of deze sync gebruiken.</p>
+      <label>Naam<input type="text" data-role="student-name" value="${getStudentName()}" placeholder="bv. Sifra"></label>
+      <div class="settings-actions">
+        <button class="next-btn show" data-role="student-save">Opslaan</button>
+      </div>
+
+      <h3 style="margin-top:28px;">GitHub-synchronisatie</h3>
       <p class="settings-hint">Slaat je oefenvoortgang op als JSON-bestand in een GitHub-repo, zodat je op meerdere apparaten met dezelfde voortgang verder kunt. Maak op <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/tokens</a> een fijnmazig token met alleen "Contents: Read and write"-rechten op déze ene repo — de sleutel wordt alleen lokaal in je browser bewaard.</p>
       <label>GitHub-gebruikersnaam<input type="text" data-role="gh-owner" value="${ghCfg.owner||'Hapzelschnapper'}" placeholder="bv. freekvanvoorst"></label>
       <label>Repository<input type="text" data-role="gh-repo" value="${ghCfg.repo||'Talen'}"></label>
@@ -7231,6 +7305,15 @@ function openSettingsModal(){
       </div>
     </div>`;
   document.body.appendChild(overlay);
+
+  overlay.querySelector('[data-role="student-save"]').addEventListener('click', ()=>{
+    const name = overlay.querySelector('[data-role="student-name"]').value.trim();
+    if(!name) return;
+    setStudentName(name);
+    updateStudentBadge();
+    render();
+    if(ghConfigured()) ghSyncNow().then(()=>render());
+  });
 
   const ghStatusEl = overlay.querySelector('[data-role="gh-status"]');
   ghOnStateChange = ()=>{ if(ghStatusEl) ghStatusEl.textContent = formatSyncStatus(); };
