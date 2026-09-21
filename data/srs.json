@@ -190,5 +190,9 @@
   "FR|parce que|omdat": {
     "box": 0,
     "due": "2026-09-21"
+  },
+  "Freek::FR|parler|praten, spreken": {
+    "box": 1,
+    "due": "2026-09-22"
   }
 }
