@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.77</div>
+<div class="version-badge">v1.78</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -7900,7 +7900,7 @@ function getChapters(lang){
     });
   } else if(lang==='de'){
     chapters.push({ id:'de-nouns', title:'Naamvallen', special:'de-nouns' });
-    chapters.push({ id:'de-verbs', title:'Vervoegingen', special:'de-verbs' });
+    chapters.push({ id:'de-verbs', title:'Werkwoorden', special:'de-verbs' });
     const DE_LES_BY_HST = {
       '1': [
         { title:'Les: Werkwoorden & voornaamwoord', words:[], richLeren: deLes_PersoonlijkWerkwoord },
@@ -7922,7 +7922,7 @@ function getChapters(lang){
       chapters.push({ id:'c'+ci, title:c.title, subs: [...lesSubs, ...vocabSubs] });
     });
   } else if(lang==='fr'){
-    chapters.push({ id:'fr-verbs', title:'Vervoegingen', special:'fr-verbs' });
+    chapters.push({ id:'fr-verbs', title:'Werkwoorden', special:'fr-verbs' });
     FR_VOCAB.forEach((c,ci)=>{
       const hstNum = (c.title.match(/\d+/) || [String(ci+1)])[0];
       const rawSubs = c.subs.map(s=>({ title:s.title, words: normWords(s.words,'fr') }));
