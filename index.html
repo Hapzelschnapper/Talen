@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.81</div>
+<div class="version-badge">v1.83</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -5905,47 +5905,77 @@ const DE_MC_PersoonlijkWerkwoord = [
   { q:"Wat is de juiste vorm van 'machen' bij 'du'?", options:['machst','machest','machen'], correct:'machst' },
   { q:"Welke uitgang hoort bij 'wir' (zwak werkwoord)?", options:['-en','-t','-st'], correct:'-en' },
   { q:"'Sie machen' (met hoofdletter Sie) betekent...", options:['u maakt / jullie maken (beleefd)','zij maakt','ik maak'], correct:'u maakt / jullie maken (beleefd)' },
-  { q:"Welke uitgang krijgt een zwak werkwoord bij 'er/sie/es'?", options:['-t','-en','-st'], correct:'-t' }
+  { q:"Welke uitgang krijgt een zwak werkwoord bij 'er/sie/es'?", options:['-t','-en','-st'], correct:'-t' },
+  { q:"Welke uitgang hoort bij 'ich' (zwak werkwoord)?", options:['-e','-st','-t'], correct:'-e' },
+  { q:"Welke uitgang hoort bij 'ihr'?", options:['-t','-st','-en'], correct:'-t' },
+  { q:"Wat is de juiste vorm van 'wohnen' bij 'er'?", options:['wohnt','wohnst','wohnen'], correct:'wohnt' },
+  { q:"Welk Duits woord gebruik je voor 'jij' (niet-beleefd, enkelvoud)?", options:['du','ihr','Sie'], correct:'du' }
 ];
 const DE_MC_HabenSein = [
   { q:"Wat is de 'du'-vorm van haben?", options:['hast','habst','habest'], correct:'hast' },
   { q:"Wat is de 'er/sie/es'-vorm van haben?", options:['hat','habt','hät'], correct:'hat' },
   { q:"Wat is de 'ich'-vorm van sein?", options:['bin','bist','sein'], correct:'bin' },
-  { q:"Wat is de 'wir'-vorm van sein?", options:['sind','seid','sein'], correct:'sind' }
+  { q:"Wat is de 'wir'-vorm van sein?", options:['sind','seid','sein'], correct:'sind' },
+  { q:"Wat is de 'ihr'-vorm van haben?", options:['habt','habst','habet'], correct:'habt' },
+  { q:"Wat is de 'sie' (meervoud)-vorm van haben?", options:['haben','habt','hat'], correct:'haben' },
+  { q:"Wat is de 'du'-vorm van sein?", options:['bist','bin','seid'], correct:'bist' },
+  { q:"Wat is de 'er/sie/es'-vorm van sein?", options:['ist','sind','bin'], correct:'ist' }
 ];
 const DE_MC_Lidwoord = [
   { q:"Wat is het onbepaalde lidwoord bij 'die Freundschaft' (vrouwelijk)?", options:['eine','ein','einen'], correct:'eine' },
   { q:"Wat is de ontkenning van 'ein Geschenk'?", options:['kein Geschenk','nicht ein Geschenk','keine Geschenk'], correct:'kein Geschenk' },
   { q:'Bestaat er een onbepaald lidwoord in het meervoud?', options:['nee','ja: eine','ja: einige'], correct:'nee' },
-  { q:"Welk lidwoord hoort bij 'der Januar'?", options:['bepaald (iets specifieks)','onbepaald (iets willekeurigs)','geen lidwoord'], correct:'bepaald (iets specifieks)' }
+  { q:"Welk lidwoord hoort bij 'der Januar'?", options:['bepaald (iets specifieks)','onbepaald (iets willekeurigs)','geen lidwoord'], correct:'bepaald (iets specifieks)' },
+  { q:"Wat is het bepaalde lidwoord bij 'Geschenk' (onzijdig)?", options:['das','der','die'], correct:'das' },
+  { q:"Wat is het onbepaalde lidwoord bij 'der Januar' (mannelijk)?", options:['ein','eine','einen'], correct:'ein' },
+  { q:"Wat is de ontkenning van 'eine Freundschaft'?", options:['keine Freundschaft','kein Freundschaft','nicht eine Freundschaft'], correct:'keine Freundschaft' },
+  { q:"Wat betekent 'kein'?", options:['geen','een','de/het'], correct:'geen' }
 ];
 const DE_MC_Bezittelijk = [
   { q:"Wat is het bezittelijk voornaamwoord bij 'ich'?", options:['mein','dein','sein'], correct:'mein' },
   { q:"Wat is het bezittelijk voornaamwoord bij 'wir'?", options:['unser','euer','ihr'], correct:'unser' },
   { q:"Wat is het bezittelijk voornaamwoord bij de beleefdheidsvorm 'Sie'?", options:['Ihr','ihr','sein'], correct:'Ihr' },
-  { q:"Wanneer valt bij 'euer' de tweede e weg?", options:['zodra er een uitgang bijkomt (bijv. eure)','altijd, in elke vorm','nooit'], correct:'zodra er een uitgang bijkomt (bijv. eure)' }
+  { q:"Wanneer valt bij 'euer' de tweede e weg?", options:['zodra er een uitgang bijkomt (bijv. eure)','altijd, in elke vorm','nooit'], correct:'zodra er een uitgang bijkomt (bijv. eure)' },
+  { q:"Wat is het bezittelijk voornaamwoord bij 'du'?", options:['dein','mein','ihr'], correct:'dein' },
+  { q:"Wat is het bezittelijk voornaamwoord bij 'er'?", options:['sein','ihr','unser'], correct:'sein' },
+  { q:"Wat is het bezittelijk voornaamwoord bij 'sie' (zij, enkelvoud)?", options:['ihr','sein','euer'], correct:'ihr' },
+  { q:"Wat is het bezittelijk voornaamwoord bij 'ihr' (jullie)?", options:['euer','ihr','unser'], correct:'euer' },
+  { q:'Een bezittelijk voornaamwoord verbuigt precies als welk woord?', options:['ein','der','kein'], correct:'ein' }
 ];
 const DE_MC_SKlank = [
   { q:"Wat is de 'du'-vorm van 'heißen'?", options:['heißt','heißst','heißest'], correct:'heißt' },
   { q:"Waarom krijgt 'du tanzt' geen extra -st?", options:['de stam eindigt al op een s-klank','het is een sterk werkwoord','het is de gebiedende wijs'], correct:'de stam eindigt al op een s-klank' },
-  { q:"Wat is de 'du'-vorm van 'reisen'?", options:['reist','reisst','reisest'], correct:'reist' }
+  { q:"Wat is de 'du'-vorm van 'reisen'?", options:['reist','reisst','reisest'], correct:'reist' },
+  { q:"Bij welke stam-uitgangen krijgt 'du' geen extra -st?", options:['s, ss, ß, z, x','alleen ß','alleen z'], correct:'s, ss, ß, z, x' },
+  { q:"Wat is de 'du'-vorm van 'tanzen'?", options:['tanzt','tanzst','tanzest'], correct:'tanzt' },
+  { q:"Wat is de 'du'-vorm van 'wohnen' (geen s-klank aan het eind)?", options:['wohnst','wohnt','wohnest'], correct:'wohnst' }
 ];
 const DE_MC_StamDT = [
   { q:"Wat is de 'du'-vorm van 'arbeiten'?", options:['arbeitest','arbeitst','arbeist'], correct:'arbeitest' },
   { q:"Waarom krijgt 'arbeiten' een extra -e- vóór de uitgang?", options:['om de vorm uitspreekbaar te houden (stam eindigt op -t)','om het meervoud te vormen','om de verleden tijd te vormen'], correct:'om de vorm uitspreekbaar te houden (stam eindigt op -t)' },
-  { q:"Wat is de 'du'-vorm van 'öffnen'?", options:['öffnest','öffnst','öffst'], correct:'öffnest' }
+  { q:"Wat is de 'du'-vorm van 'öffnen'?", options:['öffnest','öffnst','öffst'], correct:'öffnest' },
+  { q:"Wat is de 'er'-vorm van 'arbeiten'?", options:['arbeitet','arbeitt','arbeit'], correct:'arbeitet' },
+  { q:"Wat is de 'ihr'-vorm van 'arbeiten'?", options:['arbeitet','arbeitest','arbeiten'], correct:'arbeitet' },
+  { q:'Welke extra letter wordt ingevoegd bij stammen op -t of -d?', options:['-e-','-i-','-a-'], correct:'-e-' }
 ];
 const DE_MC_PersVervanging = [
   { q:"Welk voornaamwoord vervangt 'der Fluss'?", options:['er','sie','es'], correct:'er' },
   { q:"Welk voornaamwoord vervangt 'die Brücke'?", options:['sie','er','es'], correct:'sie' },
   { q:"Welk voornaamwoord vervangt 'das Dorf'?", options:['es','er','sie'], correct:'es' },
-  { q:"Welk voornaamwoord vervangt een meervoud zoals 'die Einwohner'?", options:['sie','es','er'], correct:'sie' }
+  { q:"Welk voornaamwoord vervangt een meervoud zoals 'die Einwohner'?", options:['sie','es','er'], correct:'sie' },
+  { q:"Welk voornaamwoord vervangt 'mein Fluss'?", options:['er','sie','es'], correct:'er' },
+  { q:"Welk voornaamwoord vervangt 'meine Brücke'?", options:['sie','er','es'], correct:'sie' },
+  { q:"Welk voornaamwoord vervangt 'ein Dorf'?", options:['es','sie','er'], correct:'es' },
+  { q:'Waarvan hangt de keuze van het voornaamwoord af?', options:['het geslacht van het zelfstandig naamwoord','de naamval','de tijd'], correct:'het geslacht van het zelfstandig naamwoord' }
 ];
 const DE_MC_Geslacht = [
   { q:'Welk lidwoord hoort meestal bij beroepen, dagen en maanden?', options:['der','die','das'], correct:'der' },
   { q:'Welke uitgang wijst vaak op een vrouwelijk woord?', options:['-ung','-chen','-er'], correct:'-ung' },
   { q:'Welk lidwoord hoort bij verkleinwoorden op -chen?', options:['das','der','die'], correct:'das' },
-  { q:'Welk lidwoord krijgt het meervoud altijd?', options:['die','der','das'], correct:'die' }
+  { q:'Welk lidwoord krijgt het meervoud altijd?', options:['die','der','das'], correct:'die' },
+  { q:'Welk lidwoord past meestal bij mannelijke personen en dieren?', options:['der','die','das'], correct:'der' },
+  { q:'Wat is het advies om een zelfstandig naamwoord te leren?', options:['altijd met het lidwoord erbij','alleen het woord zonder lidwoord','alleen het meervoud'], correct:'altijd met het lidwoord erbij' },
+  { q:"Welk lidwoord hoort bij 'das Mädchen', ook al gaat het over een meisje?", options:['das (vanwege -chen)','die (vanwege "meisje")','der'], correct:'das (vanwege -chen)' }
 ];
 
 function deVerbOefenen(){
@@ -6762,84 +6792,127 @@ const EL_MC_NAAMVALLEN = [
   { q:'In "ὁ δοῦλος ἔχει φόβον" (de slaaf heeft angst) — welke functie heeft δοῦλος?', options:['onderwerp (nominativus)','lijdend voorwerp (accusativus)','bezitter (genitivus)'], correct:'onderwerp (nominativus)' },
   { q:'In "Εὐρυσθεὺς δοῦλον ἔχει" (Eurystheus heeft een slaaf) — welke functie heeft δοῦλον?', options:['onderwerp (nominativus)','lijdend voorwerp (accusativus)','meewerkend voorwerp (dativus)'], correct:'lijdend voorwerp (accusativus)' },
   { q:'"Ἡρακλῆς δοῦλός ἐστιν" (Herakles is slaaf) — welke functie heeft δοῦλός hier?', options:['naamwoordelijk deel van het gezegde','lijdend voorwerp','bijvoeglijke bepaling'], correct:'naamwoordelijk deel van het gezegde' },
-  { q:'Hoeveel naamvallen kent het Grieks?', options:['vier','vijf','zes'], correct:'vijf' }
+  { q:'Hoeveel naamvallen kent het Grieks?', options:['vier','vijf','zes'], correct:'vijf' },
+  { q:'Welke naamval is meestal gelijk aan de nominativus?', options:['vocativus','dativus','genitivus'], correct:'vocativus' },
+  { q:'"θεοὶ οὐκ εἰσὶν ἄνθρωποι" (goden zijn geen mensen) — ontbreekt hier het lidwoord bij ἄνθρωποι omdat...?', options:['het naamwoordelijk deel van het gezegde is','het onderwerp is','het lijdend voorwerp is'], correct:'het naamwoordelijk deel van het gezegde is' },
+  { q:'Wat zie je aan de uitgang van een Grieks zelfstandig naamwoord?', options:['de functie in de zin','het aantal lettergrepen','de klemtoon van het hele woord'], correct:'de functie in de zin' },
+  { q:'Welke naamval is de 4e naamval?', options:['accusativus','genitivus','dativus'], correct:'accusativus' }
 ];
 const EL_MC_GebrLidwoord = [
   { q:'Hoe vertaal je een zelfstandig naamwoord meestal als er géén lidwoord bij staat?', options:['met "een"','met "de/het"','helemaal niet'], correct:'met "een"' },
   { q:'"ὁ Ἡρακλῆς τὸ τόξον φέρει" — hoe vertaal je τὸ τόξον hier het best?', options:['een boog','zijn boog','de boog van iemand anders'], correct:'zijn boog' },
   { q:'Bij welk zinsdeel ontbreekt het lidwoord meestal?', options:['het onderwerp','het naamwoordelijk deel van het gezegde','het lijdend voorwerp'], correct:'het naamwoordelijk deel van het gezegde' },
-  { q:'Heeft het Grieks een onbepaald lidwoord (zoals "een" in het Nederlands)?', options:['ja, τι','nee','alleen in het meervoud'], correct:'nee' }
+  { q:'Heeft het Grieks een onbepaald lidwoord (zoals "een" in het Nederlands)?', options:['ja, τι','nee','alleen in het meervoud'], correct:'nee' },
+  { q:'"ἐνταῦθα λέων οἰκεῖ" — hoe vertaal je λέων hier het best, zonder lidwoord?', options:['een leeuw','de leeuw','leeuwen'], correct:'een leeuw' },
+  { q:'Wanneer wordt het bepaald lidwoord gebruikt?', options:['als iets al eerder genoemd is','alleen bij eigennamen','alleen in het meervoud'], correct:'als iets al eerder genoemd is' },
+  { q:'Hebben Griekse eigennamen altijd een lidwoord?', options:['nee, soms wel en soms niet','ja, altijd','nee, nooit'], correct:'nee, soms wel en soms niet' }
 ];
 const EL_MC_GebrBijvNw = [
   { q:'"τὸ δεινὸν θηρίον" — waar staat het bijvoeglijk naamwoord?', options:['tussen lidwoord en zelfstandig naamwoord','vóór het lidwoord','na het hele zinsdeel, los'], correct:'tussen lidwoord en zelfstandig naamwoord' },
   { q:'Als naamwoordelijk deel van het gezegde past het bijvoeglijk naamwoord zich aan in naamval en...?', options:['geslacht','tijd','stam'], correct:'geslacht' },
   { q:'ἀθάνατος bestaat uit ἀ- (on-) + welk deel?', options:['θάνατος (dood)','ἄνθρωπος (mens)','νοῦς (geest)'], correct:'θάνατος (dood)' },
-  { q:'Samengestelde bijvoeglijke naamwoorden op -ος hebben...', options:['een aparte vrouwelijke uitgang','geen aparte vrouwelijke uitgang','alleen een vrouwelijke uitgang'], correct:'geen aparte vrouwelijke uitgang' }
+  { q:'Samengestelde bijvoeglijke naamwoorden op -ος hebben...', options:['een aparte vrouwelijke uitgang','geen aparte vrouwelijke uitgang','alleen een vrouwelijke uitgang'], correct:'geen aparte vrouwelijke uitgang' },
+  { q:'"ὕδρα μεγάλη" (zónder lidwoord) — waar mag het bijvoeglijk naamwoord hier staan?', options:['zowel vóór als achter het zelfstandig naamwoord','alleen vóór','alleen achter'], correct:'zowel vóór als achter het zelfstandig naamwoord' },
+  { q:'"ἡ ὕδρα μεγάλη ἐστὶ καὶ φοβερά" — welk gebruik van het bijvoeglijk naamwoord is dit?', options:['naamwoordelijk deel van het gezegde','bijvoeglijke bepaling','predicatief gebruik'], correct:'naamwoordelijk deel van het gezegde' },
+  { q:'εὔνους betekent "goedgezind" en bestaat uit εὖ (goed) + welk deel?', options:['νοῦς (geest)','δίκη (recht)','θάνατος (dood)'], correct:'νοῦς (geest)' }
 ];
 const EL_MC_NietVeranderen = [
   { q:'μετά + genitivus betekent?', options:['samen met','na','tegen'], correct:'samen met' },
   { q:'εἰς + accusativus betekent?', options:['vanuit','naar, naar binnen, tot','bij, in de buurt van'], correct:'naar, naar binnen, tot' },
   { q:'Voorzetsels en bijwoorden veranderen nooit van vorm. Welke derde soort ook niet?', options:['partikels','werkwoorden','bijvoeglijke naamwoorden'], correct:'partikels' },
-  { q:'Het partikel δέ betekent meestal?', options:['en/maar (vaak onvertaald)','dus, daarom','misschien'], correct:'en/maar (vaak onvertaald)' }
+  { q:'Het partikel δέ betekent meestal?', options:['en/maar (vaak onvertaald)','dus, daarom','misschien'], correct:'en/maar (vaak onvertaald)' },
+  { q:'ἐν + dativus betekent?', options:['in, op, bij','naar','vanuit'], correct:'in, op, bij' },
+  { q:'Wat drukt het bijwoord ἐνταῦθα uit?', options:['daar','meteen','zo'], correct:'daar' },
+  { q:'Het partikel μέν geeft aan dat...?', options:['er nog een zin komt die met δέ begint','de zin net is afgesloten','er een vraag volgt'], correct:'er nog een zin komt die met δέ begint' },
+  { q:'Wat drukt het bijwoord μάλα uit?', options:['de mate ("erg, zeer")','de plaats','de tijd'], correct:'de mate ("erg, zeer")' }
 ];
 const EL_MC_WerkwPredicatief = [
   { q:'Als het onderwerp een onzijdig meervoud is, staat het werkwoord meestal in het...?', options:['enkelvoud','meervoud','zowel enkelvoud als meervoud'], correct:'enkelvoud' },
   { q:'"ὁ Θησεὺς μόνος τὸν Μινώταυρον ζητεῖ" — wat voor gebruik is μόνος hier?', options:['predicatief','als bijvoeglijke bepaling met lidwoord','als naamwoordelijk deel bij "zijn"'], correct:'predicatief' },
   { q:'Staat er een lidwoord vóór een predicatief gebruikt bijvoeglijk naamwoord?', options:['ja, altijd','nee','alleen in het meervoud'], correct:'nee' },
-  { q:'"τὰ τέκνα δακρύει" (de kinderen huilen) — waarom staat δακρύει in het enkelvoud?', options:['het onderwerp is onzijdig meervoud','het is een uitzonderingswerkwoord','τέκνα is eigenlijk enkelvoud'], correct:'het onderwerp is onzijdig meervoud' }
+  { q:'"τὰ τέκνα δακρύει" (de kinderen huilen) — waarom staat δακρύει in het enkelvoud?', options:['het onderwerp is onzijdig meervoud','het is een uitzonderingswerkwoord','τέκνα is eigenlijk enkelvoud'], correct:'het onderwerp is onzijdig meervoud' },
+  { q:'Hoe vertaal je predicatief gebruikt μόνος het best?', options:['als "alleen/als enige"','als "de enige, los"','helemaal niet vertalen'], correct:'als "alleen/als enige"' },
+  { q:'Waar zegt een predicatief bijvoeglijk naamwoord iets over, behalve over het onderwerp?', options:['over de manier van handelen (het werkwoord)','over de plaats','over de tijd'], correct:'over de manier van handelen (het werkwoord)' }
 ];
 const EL_MC_Autos = [
   { q:'αὐτός bij een zelfstandig naamwoord (zónder lidwoord ervoor) betekent?', options:['zelf','dezelfde','hij/hem'], correct:'zelf' },
   { q:'Lidwoord + αὐτός (bijv. ἡ αὐτή) betekent?', options:['zelf','dezelfde / hetzelfde','geen van beide'], correct:'dezelfde / hetzelfde' },
   { q:'De nominativus van αὐτός (αὐτός, αὐτή, αὐτό) betekent altijd?', options:['zelf','hem/haar/het','dezelfde'], correct:'zelf' },
-  { q:'"ἐγὼ αὐτός" betekent?', options:['ik zelf','dezelfde ik','mijzelf (lijdend voorwerp)'], correct:'ik zelf' }
+  { q:'"ἐγὼ αὐτός" betekent?', options:['ik zelf','dezelfde ik','mijzelf (lijdend voorwerp)'], correct:'ik zelf' },
+  { q:'αὐτοῦ, αὐτῆς enz. "los" (zelfstandig) gebruikt betekenen?', options:['hem, haar, het','zelf','dezelfde'], correct:'hem, haar, het' },
+  { q:'In welke naamvallen kan αὐτός als persoonlijk voornaamwoord van de 3e persoon gebruikt worden?', options:['genitivus, dativus, accusativus','alleen nominativus','alleen accusativus'], correct:'genitivus, dativus, accusativus' },
+  { q:'"ἡ φωνὴ αὐτῆς" betekent?', options:['haar stem','dezelfde stem','de stem zelf'], correct:'haar stem' }
 ];
 const EL_MC_AugmentBeginklinker = [
   { q:'ἀκούω (begint met α) krijgt in het imperfectum welke beginklinker?', options:['η','ω','blijft α'], correct:'η' },
   { q:'Een werkwoord dat al begint met ω, blijft in het imperfectum?', options:['ω','η','α'], correct:'ω' },
   { q:'Wat is de bekende uitzondering op de augmentregel bij beginklinker?', options:['ἔχω → εἶχον','ἀκούω → ἤκουον','ὁμολογέω → ὡμολόγουν'], correct:'ἔχω → εἶχον' },
-  { q:'εὑρίσκω (begint met ευ) wordt in het imperfectum?', options:['ηὑρισκον','ωὑρισκον','blijft ευ-'], correct:'ηὑρισκον' }
+  { q:'εὑρίσκω (begint met ευ) wordt in het imperfectum?', options:['ηὑρισκον','ωὑρισκον','blijft ευ-'], correct:'ηὑρισκον' },
+  { q:'ἐθέλω (begint met ε) krijgt in het imperfectum welke beginklinker?', options:['η','ω','blijft ε'], correct:'η' },
+  { q:'ὁμολογέω (begint met ο) krijgt in het imperfectum welke beginklinker?', options:['ω','η','blijft ο'], correct:'ω' },
+  { q:'ἥκω (begint met η) blijft in het imperfectum?', options:['η','ω','wordt ει'], correct:'η' },
+  { q:'ἱκετεύω (begint met ι) verandert in het imperfectum?', options:['nee, ι blijft gelijk','ja, wordt η','ja, wordt ει'], correct:'nee, ι blijft gelijk' }
 ];
 const EL_MC_AugmentSamengesteld = [
   { q:'Bij een samengesteld werkwoord (met voorzetsel) staat het augment?', options:['vóór het voorzetsel','achter het voorzetsel','er komt geen augment'], correct:'achter het voorzetsel' },
   { q:'ἀναβαίνω wordt in het imperfectum?', options:['ἀνέβαινον','ἠνάβαινον','ἀναέβαινον'], correct:'ἀνέβαινον' },
   { q:'Het praesens historicum wordt gebruikt om?', options:['een ooggetuigen-effect te geven op een belangrijk moment','de toekomst aan te duiden','een gewoonte te beschrijven'], correct:'een ooggetuigen-effect te geven op een belangrijk moment' },
-  { q:'Bij welk voorzetsel is er een uitzondering op de augmentplaatsing?', options:['περί','ἐπί','κατά'], correct:'περί' }
+  { q:'Bij welk voorzetsel is er een uitzondering op de augmentplaatsing?', options:['περί','ἐπί','κατά'], correct:'περί' },
+  { q:'ἐπιθυμέω wordt in het imperfectum?', options:['ἐπεθύμουν','ἠπιθύμουν','ἐπιεθύμουν'], correct:'ἐπεθύμουν' },
+  { q:'Wat gebeurt er als het voorzetsel van een samengesteld werkwoord op een klinker eindigt (bijv. ἀπό, διά)?', options:['het augment komt in plaats van die klinker','de klinker verdwijnt zonder augment','er komt geen augment'], correct:'het augment komt in plaats van die klinker' },
+  { q:'ἀποφέρω wordt in het imperfectum?', options:['ἀπέφερον','ἠποφέρουν','ἀπεφέρουν'], correct:'ἀπέφερον' }
 ];
 const EL_MC_AoristusMedeklinker = [
   { q:'βλέπω (stam op π) krijgt in de aoristus welke combinatie vóór de uitgang?', options:['ψ','ξ','σ'], correct:'ψ' },
   { q:'διώκω (stam op κ) krijgt in de aoristus welke combinatie?', options:['ψ','ξ','σ'], correct:'ξ' },
   { q:'νομίζω (stam op ζ, dus eigenlijk δ) — wat gebeurt er met die medeklinker in de aoristus?', options:['die verdwijnt (alleen σ blijft)','die wordt ξ','die wordt ψ'], correct:'die verdwijnt (alleen σ blijft)' },
-  { q:'Een aoristusvorm stelt een handeling voor als?', options:['afgesloten','nog bezig','een gewoonte'], correct:'afgesloten' }
+  { q:'Een aoristusvorm stelt een handeling voor als?', options:['afgesloten','nog bezig','een gewoonte'], correct:'afgesloten' },
+  { q:'λέγω (stam op γ) krijgt in de aoristus welke combinatie?', options:['ξ','ψ','σ'], correct:'ξ' },
+  { q:'πείθω (stam op θ) krijgt in de aoristus?', options:['ἔπεισα (θ verdwijnt)','ἔπειξα','ἔπειψα'], correct:'ἔπεισα (θ verdwijnt)' },
+  { q:'Wat stelt een imperfectum voor, in tegenstelling tot een aoristus?', options:['een niet-afgesloten (herhaalde of achtergrond-) handeling','een plotselinge gebeurtenis','een toekomstige handeling'], correct:'een niet-afgesloten (herhaalde of achtergrond-) handeling' }
 ];
 const EL_MC_PseudoThematisch = [
   { q:'Welke medeklinkers geven een pseudo-sigmatische (in plaats van sigmatische) aoristus?', options:['μ, λ, ν, ρ','π, β, φ','κ, γ, χ'], correct:'μ, λ, ν, ρ' },
   { q:'Bij een pseudo-sigmatische aoristus ontbreekt de?', options:['σ','uitgang','stam'], correct:'σ' },
   { q:'λαμβάνω heeft in de aoristus de (heel andere) stam?', options:['λαβ-','λαμβ-','ληβ-'], correct:'λαβ-' },
-  { q:'Een thematische aoristus herken je aan?', options:['een heel andere stam dan het praesens','de -σα-uitgang','het ontbreken van een augment'], correct:'een heel andere stam dan het praesens' }
+  { q:'Een thematische aoristus herken je aan?', options:['een heel andere stam dan het praesens','de -σα-uitgang','het ontbreken van een augment'], correct:'een heel andere stam dan het praesens' },
+  { q:'μένω (blijven) heeft in de aoristus de vorm?', options:['ἔμεινα','ἔμενσα','ἔμηνα'], correct:'ἔμεινα' },
+  { q:'Waaraan herken je een pseudo-sigmatische aoristus meestal?', options:['aan de verlengde werkwoordstam','aan een extra σ','aan het ontbreken van uitgangen'], correct:'aan de verlengde werkwoordstam' },
+  { q:'ἀγγέλλω (berichten) heeft in de aoristus de stam?', options:['ἀγγελ-','ἀγγελλ-','ἠγγελ-'], correct:'ἀγγελ-' }
 ];
 const EL_MC_ExtraAoristus = [
   { q:'λαμβάνω → wat is de aoristusstam?', options:['λαβ-','λαμβ-','λημ-'], correct:'λαβ-' },
   { q:'De themavocaal in een thematische aoristus is?', options:['-ε/ο-','-σα-','-θη-'], correct:'-ε/ο-' },
-  { q:'ἔλαβον kan betekenen?', options:['ik nam / zij namen','ik neem','ik zal nemen'], correct:'ik nam / zij namen' }
+  { q:'ἔλαβον kan betekenen?', options:['ik nam / zij namen','ik neem','ik zal nemen'], correct:'ik nam / zij namen' },
+  { q:'Een thematische aoristus verbuigt zich net als de praesensstam van welk type?', options:['λύω','ποιέω','εἰμί'], correct:'λύω' },
+  { q:'Waarom heet de thematische aoristus zo?', options:['vanwege de themavocaal -ε/ο-','vanwege het thema van het verhaal','vanwege een vaste stam op θ'], correct:'vanwege de themavocaal -ε/ο-' }
 ];
 const EL_MC_TrappenVorming = [
   { q:'De comparativus van de meeste bijvoeglijke naamwoorden gaat uit op?', options:['-τερος','-τατος','-ιστος'], correct:'-τερος' },
   { q:'De superlativus van de meeste bijvoeglijke naamwoorden gaat uit op?', options:['-τερος','-τατος','-ίων'], correct:'-τατος' },
   { q:'βελτίων, βέλτιον wordt verbogen als?', options:['σώφρων','δεινός','μακρός'], correct:'σώφρων' },
-  { q:'Bijvoeglijke naamwoorden met comparativus op -(ί)ων hebben een superlativus op?', options:['-ιστος','-τατος','-τερος'], correct:'-ιστος' }
+  { q:'Bijvoeglijke naamwoorden met comparativus op -(ί)ων hebben een superlativus op?', options:['-ιστος','-τατος','-τερος'], correct:'-ιστος' },
+  { q:'δειλότερος (laffer) wordt verbogen als?', options:['μακρός','σώφρων','δεινός'], correct:'μακρός' },
+  { q:'σοφώτατος (wijste) wordt verbogen als?', options:['δεινός','μακρός','σώφρων'], correct:'δεινός' },
+  { q:'Welke uitgang hoort bij de comparativus op -(ί)ων in het onzijdig?', options:['-(ι)ον','-τερον','-ιστον'], correct:'-(ι)ον' }
 ];
 const EL_MC_TrappenGebruik = [
   { q:'De vergeleken persoon/zaak staat na ἤ of in de?', options:['genitivus (comparationis)','dativus','accusativus'], correct:'genitivus (comparationis)' },
   { q:'Zonder vergelijking vertaal je de superlativus vaak met?', options:['zeer/heel...','minder dan...','net zo...'], correct:'zeer/heel...' },
   { q:'ὡς/ὅτι + superlativus (bijv. ὡς πλεῖστα) betekent?', options:['zo ... mogelijk','helemaal niet','net als vroeger'], correct:'zo ... mogelijk' },
-  { q:'Een comparativus-genitivus zónder ἤ vertaal je met?', options:['dan','en','of'], correct:'dan' }
+  { q:'Een comparativus-genitivus zónder ἤ vertaal je met?', options:['dan','en','of'], correct:'dan' },
+  { q:'Zonder vergelijking vertaal je de comparativus vaak met?', options:['nogal, tamelijk, al te','zeer, heel','zo... mogelijk'], correct:'nogal, tamelijk, al te' },
+  { q:'"βέλτιστος πάντων Ἀχαιῶν" — in welke naamval staat de vergeleken groep?', options:['genitivus','dativus','accusativus'], correct:'genitivus' },
+  { q:'Bij het vergelijken van twee personen/zaken drukt de comparativus vaak uit?', options:['de hoogste graad van de twee','een gelijke graad','een lagere graad'], correct:'de hoogste graad van de twee' }
 ];
 const EL_MC_ACI = [
   { q:'Bij een A.c.I. staat het onderwerp van de infinitivus in de?', options:['accusativus','nominativus','genitivus'], correct:'accusativus' },
   { q:'De A.c.I. wordt gebruikt als alternatief voor de?', options:['ὅτι-zin','εἰ-zin','hoofdzin'], correct:'ὅτι-zin' },
   { q:'Een praesens-infinitivus in de A.c.I. is ten opzichte van de persoonsvorm?', options:['gelijktijdig','voortijdig','na-tijdig'], correct:'gelijktijdig' },
-  { q:'Een aoristus-infinitivus in de A.c.I. is ten opzichte van de persoonsvorm?', options:['gelijktijdig','voortijdig (eerder)','na-tijdig (later)'], correct:'voortijdig (eerder)' }
+  { q:'Een aoristus-infinitivus in de A.c.I. is ten opzichte van de persoonsvorm?', options:['gelijktijdig','voortijdig (eerder)','na-tijdig (later)'], correct:'voortijdig (eerder)' },
+  { q:'Bij welk soort werkwoorden ("zeggen, menen, horen") komt de A.c.I. vooral voor?', options:['werkwoorden van zeggen, menen en horen','werkwoorden van beweging','werkwoorden van willen'], correct:'werkwoorden van zeggen, menen en horen' },
+  { q:'Is het onderwerp van de infinitivus in een A.c.I. gelijk aan het onderwerp van de persoonsvorm?', options:['nee, dat is juist niet zo','ja, altijd','soms wel, soms niet'], correct:'nee, dat is juist niet zo' },
+  { q:'Bij een onpersoonlijke uitdrukking zoals "δῆλόν ἐστι..." kan de hele A.c.I. dienen als?', options:['onderwerp van de zin','lijdend voorwerp','bijvoeglijke bepaling'], correct:'onderwerp van de zin' }
 ];
 
 const EL_TOPICS_BY_HST = {
@@ -7627,6 +7700,17 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
   let direction = 'both';
   let score=0,total=0,streak=0,current=null,hintTaps=0,awaitingNext=false;
 
+  // Het Griekse toetsenbord op het scherm kan geen accenten/spiritus typen — dus bij het Grieks
+  // wordt de beoordeling van getypte antwoorden voor die tekens opgeschort: accenten, spiritus en
+  // iota subscriptum worden genegeerd bij het vergelijken (elders blijft alles exact).
+  function stripGreekDiacritics(s){
+    return s.normalize('NFD').replace(/[̀-ͯ]/g,'').normalize('NFC');
+  }
+  function normAnswerLoc(s){
+    const base = normAnswer(s);
+    return langCode==='EL' ? stripGreekDiacritics(base) : base;
+  }
+
   Object.keys(cats).forEach(key=>{
     const cat = cats[key];
     const btn = document.createElement('button');
@@ -7715,8 +7799,8 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
       formKeys.forEach(k=>{
         if(k===formKey) return;
         const val = forms[k];
-        if(normAnswer(val)===normAnswer(correct)) return;
-        altLookup[normAnswer(val)] = `"${val}" is de ${describeForm(word,k,forms)}`;
+        if(normAnswerLoc(val)===normAnswerLoc(correct)) return;
+        altLookup[normAnswerLoc(val)] = `"${val}" is de ${describeForm(word,k,forms)}`;
       });
     }
     return {
@@ -7725,7 +7809,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
       questionHTML: questionTemplate(word, formKey, forms),
       correct,
       mcOptions: shuffle([correct, ...wrongPool.slice(0,3)]),
-      accept: (val)=> ({ ok: normAnswer(val)===normAnswer(correct), typo:false }),
+      accept: (val)=> ({ ok: normAnswerLoc(val)===normAnswerLoc(correct), typo:false }),
       altLookup
     };
   }
@@ -7785,14 +7869,14 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     }
     const correct = lemmaFn(word);
     const wrongPool = shuffle(others.map(w=>lemmaFn(w)));
-    others.forEach(w2=>{ altLookup[normAnswer(lemmaFn(w2))] = `"${lemmaFn(w2)}" betekent "${w2.nl}"`; });
+    others.forEach(w2=>{ altLookup[normAnswerLoc(lemmaFn(w2))] = `"${lemmaFn(w2)}" betekent "${w2.nl}"`; });
     return {
       type:'vertaal',
       word,
       questionHTML: `Wat is ${itemWord} voor <span class="w">${word.nl}</span>?`,
       correct,
       mcOptions: shuffle([correct, ...wrongPool.slice(0,3)]),
-      accept: (v)=> ({ ok: splitAlternatives(correct).some(alt=>normAnswer(alt)===normAnswer(v)), typo:false }),
+      accept: (v)=> ({ ok: splitAlternatives(correct).some(alt=>normAnswerLoc(alt)===normAnswerLoc(v)), typo:false }),
       altLookup,
       bonusInfo: word.bonus
     };
@@ -7857,7 +7941,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     hintTaps++;
     let shown=0, out='';
     for(const ch of current.correct){
-      if(/[a-zA-ZÀ-ÿ]/.test(ch)){
+      if(/\p{L}/u.test(ch)){
         shown++;
         out += shown<=hintTaps ? ch : '_';
       } else {
@@ -7913,7 +7997,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
       if(altMsg){
         msg = `Fout — ${altMsg}, juist is: "${current.correct}".`;
       } else if(current.answerMode==='input' && current.altLookup){
-        const alt = current.altLookup[normAnswer(chosen)];
+        const alt = current.altLookup[normAnswerLoc(chosen)];
         if(alt) msg = `Fout — ${alt}, juist is: "${current.correct}".`;
       }
       feedbackEl.textContent = msg;
@@ -7943,7 +8027,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     }
 
     textInput.disabled=true; checkBtn.disabled=true;
-    const normChosen = normAnswer(chosen);
+    const normChosen = normAnswerLoc(chosen);
     const knownAlt = current.altLookup && current.altLookup[normChosen];
     const match = current.accept(chosen);
     if(match.ok){
@@ -8501,6 +8585,16 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
   let idx=0, wrong=0, current=null, awaitingNext=false;
   const itemWord = itemLabel==='letter' ? 'de letter' : 'het woord';
 
+  // Zie initOefenen: het Griekse schermtoetsenbord kan geen accenten/spiritus typen, dus die
+  // worden bij het Grieks genegeerd bij het beoordelen van getypte antwoorden.
+  function stripGreekDiacritics(s){
+    return s.normalize('NFD').replace(/[̀-ͯ]/g,'').normalize('NFC');
+  }
+  function normAnswerLoc(s){
+    const base = normAnswer(s);
+    return langCode==='EL' ? stripGreekDiacritics(base) : base;
+  }
+
   function buildQ(dir, word){
     const others = words.filter(w=>w!==word);
     if(dir==='target2nl'){
@@ -8564,7 +8658,7 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
   }
 
   function answer(val){
-    const isCorrect = normAnswer(val)===normAnswer(current.correct);
+    const isCorrect = normAnswerLoc(val)===normAnswerLoc(current.correct);
     if(current.mode==='mc'){
       Array.from(optsEl.children).forEach(b=>{ b.disabled=true; if(b.textContent===current.correct) b.classList.add('correct'); else if(b.textContent===val && !isCorrect) b.classList.add('wrong'); });
       finalizeAnswer(isCorrect, false);
