@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.78</div>
+<div class="version-badge">v1.79</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -5884,6 +5884,53 @@ function deLes_Geslacht(){
   `;
 }
 
+/* ---- Oefenvragen bij de Duitse grammaticalessen (Les:), zelfde opzet als de MC-quizzen bij het Grieks ---- */
+const DE_MC_PersoonlijkWerkwoord = [
+  { q:"Wat is de juiste vorm van 'machen' bij 'du'?", options:['machst','machest','machen'], correct:'machst' },
+  { q:"Welke uitgang hoort bij 'wir' (zwak werkwoord)?", options:['-en','-t','-st'], correct:'-en' },
+  { q:"'Sie machen' (met hoofdletter Sie) betekent...", options:['u maakt / jullie maken (beleefd)','zij maakt','ik maak'], correct:'u maakt / jullie maken (beleefd)' },
+  { q:"Welke uitgang krijgt een zwak werkwoord bij 'er/sie/es'?", options:['-t','-en','-st'], correct:'-t' }
+];
+const DE_MC_HabenSein = [
+  { q:"Wat is de 'du'-vorm van haben?", options:['hast','habst','habest'], correct:'hast' },
+  { q:"Wat is de 'er/sie/es'-vorm van haben?", options:['hat','habt','hät'], correct:'hat' },
+  { q:"Wat is de 'ich'-vorm van sein?", options:['bin','bist','sein'], correct:'bin' },
+  { q:"Wat is de 'wir'-vorm van sein?", options:['sind','seid','sein'], correct:'sind' }
+];
+const DE_MC_Lidwoord = [
+  { q:"Wat is het onbepaalde lidwoord bij 'die Freundschaft' (vrouwelijk)?", options:['eine','ein','einen'], correct:'eine' },
+  { q:"Wat is de ontkenning van 'ein Geschenk'?", options:['kein Geschenk','nicht ein Geschenk','keine Geschenk'], correct:'kein Geschenk' },
+  { q:'Bestaat er een onbepaald lidwoord in het meervoud?', options:['nee','ja: eine','ja: einige'], correct:'nee' },
+  { q:"Welk lidwoord hoort bij 'der Januar'?", options:['bepaald (iets specifieks)','onbepaald (iets willekeurigs)','geen lidwoord'], correct:'bepaald (iets specifieks)' }
+];
+const DE_MC_Bezittelijk = [
+  { q:"Wat is het bezittelijk voornaamwoord bij 'ich'?", options:['mein','dein','sein'], correct:'mein' },
+  { q:"Wat is het bezittelijk voornaamwoord bij 'wir'?", options:['unser','euer','ihr'], correct:'unser' },
+  { q:"Wat is het bezittelijk voornaamwoord bij de beleefdheidsvorm 'Sie'?", options:['Ihr','ihr','sein'], correct:'Ihr' },
+  { q:"Wanneer valt bij 'euer' de tweede e weg?", options:['zodra er een uitgang bijkomt (bijv. eure)','altijd, in elke vorm','nooit'], correct:'zodra er een uitgang bijkomt (bijv. eure)' }
+];
+const DE_MC_SKlank = [
+  { q:"Wat is de 'du'-vorm van 'heißen'?", options:['heißt','heißst','heißest'], correct:'heißt' },
+  { q:"Waarom krijgt 'du tanzt' geen extra -st?", options:['de stam eindigt al op een s-klank','het is een sterk werkwoord','het is de gebiedende wijs'], correct:'de stam eindigt al op een s-klank' },
+  { q:"Wat is de 'du'-vorm van 'reisen'?", options:['reist','reisst','reisest'], correct:'reist' }
+];
+const DE_MC_StamDT = [
+  { q:"Wat is de 'du'-vorm van 'arbeiten'?", options:['arbeitest','arbeitst','arbeist'], correct:'arbeitest' },
+  { q:"Waarom krijgt 'arbeiten' een extra -e- vóór de uitgang?", options:['om de vorm uitspreekbaar te houden (stam eindigt op -t)','om het meervoud te vormen','om de verleden tijd te vormen'], correct:'om de vorm uitspreekbaar te houden (stam eindigt op -t)' },
+  { q:"Wat is de 'du'-vorm van 'öffnen'?", options:['öffnest','öffnst','öffst'], correct:'öffnest' }
+];
+const DE_MC_PersVervanging = [
+  { q:"Welk voornaamwoord vervangt 'der Fluss'?", options:['er','sie','es'], correct:'er' },
+  { q:"Welk voornaamwoord vervangt 'die Brücke'?", options:['sie','er','es'], correct:'sie' },
+  { q:"Welk voornaamwoord vervangt 'das Dorf'?", options:['es','er','sie'], correct:'es' },
+  { q:"Welk voornaamwoord vervangt een meervoud zoals 'die Einwohner'?", options:['sie','es','er'], correct:'sie' }
+];
+const DE_MC_Geslacht = [
+  { q:'Welk lidwoord hoort meestal bij beroepen, dagen en maanden?', options:['der','die','das'], correct:'der' },
+  { q:'Welke uitgang wijst vaak op een vrouwelijk woord?', options:['-ung','-chen','-er'], correct:'-ung' },
+  { q:'Welk lidwoord hoort bij verkleinwoorden op -chen?', options:['das','der','die'], correct:'das' },
+  { q:'Welk lidwoord krijgt het meervoud altijd?', options:['die','der','das'], correct:'die' }
+];
 
 function deVerbOefenen(){
   const cats = {
@@ -7903,16 +7950,16 @@ function getChapters(lang){
     chapters.push({ id:'de-verbs', title:'Werkwoorden', special:'de-verbs' });
     const DE_LES_BY_HST = {
       '1': [
-        { title:'Les: Werkwoorden & voornaamwoord', words:[], richLeren: deLes_PersoonlijkWerkwoord },
-        { title:'Les: Haben en sein', words:[], richLeren: deLes_HabenSein },
-        { title:'Les: Het lidwoord', words:[], richLeren: deLes_Lidwoord },
-        { title:'Les: Bezittelijk voornaamwoord', words:[], richLeren: deLes_Bezittelijk }
+        { title:'Les: Werkwoorden & voornaamwoord', words:[], richLeren: deLes_PersoonlijkWerkwoord, richOefenen: ()=>renderMcQuiz(DE_MC_PersoonlijkWerkwoord, 'Werkwoorden & voornaamwoord') },
+        { title:'Les: Haben en sein', words:[], richLeren: deLes_HabenSein, richOefenen: ()=>renderMcQuiz(DE_MC_HabenSein, 'Haben en sein') },
+        { title:'Les: Het lidwoord', words:[], richLeren: deLes_Lidwoord, richOefenen: ()=>renderMcQuiz(DE_MC_Lidwoord, 'Het lidwoord') },
+        { title:'Les: Bezittelijk voornaamwoord', words:[], richLeren: deLes_Bezittelijk, richOefenen: ()=>renderMcQuiz(DE_MC_Bezittelijk, 'Bezittelijk voornaamwoord') }
       ],
       '2': [
-        { title:'Les: Werkwoorden met s-klank', words:[], richLeren: deLes_SKlank },
-        { title:'Les: Werkwoorden op -d/-t', words:[], richLeren: deLes_StamDT },
-        { title:'Les: Persoonlijk voornaamwoord (vervanging)', words:[], richLeren: deLes_PersVervanging },
-        { title:'Les: Geslacht van het zelfstandig naamwoord', words:[], richLeren: deLes_Geslacht }
+        { title:'Les: Werkwoorden met s-klank', words:[], richLeren: deLes_SKlank, richOefenen: ()=>renderMcQuiz(DE_MC_SKlank, 'Werkwoorden met s-klank') },
+        { title:'Les: Werkwoorden op -d/-t', words:[], richLeren: deLes_StamDT, richOefenen: ()=>renderMcQuiz(DE_MC_StamDT, 'Werkwoorden op -d/-t') },
+        { title:'Les: Persoonlijk voornaamwoord (vervanging)', words:[], richLeren: deLes_PersVervanging, richOefenen: ()=>renderMcQuiz(DE_MC_PersVervanging, 'Persoonlijk voornaamwoord') },
+        { title:'Les: Geslacht van het zelfstandig naamwoord', words:[], richLeren: deLes_Geslacht, richOefenen: ()=>renderMcQuiz(DE_MC_Geslacht, 'Geslacht van het zelfstandig naamwoord') }
       ]
     };
     DE_VOCAB.forEach((c,ci)=>{
@@ -8141,7 +8188,7 @@ function renderSelect(mode){
   const specials = mode==='oefenen' ? allChapters.filter(c=>c.special) : [];
   const chapters = allChapters
     .filter(c=>!c.special)
-    .map(c=>({ ...c, subs: c.subs.filter(s=>s.words.length>0) }))
+    .map(c=>({ ...c, subs: c.subs.filter(s=>s.words.length>0 || s.richOefenen) }))
     .filter(c=>c.subs.length>0);
   const wrapId = 'sel-' + Math.random().toString(36).slice(2,8);
   setTimeout(()=>initSelect(wrapId, chapters, mode, specials), 0);
@@ -8171,7 +8218,7 @@ function renderSelect(mode){
         ${c.subs.map((s,si)=>`
           <div class="sub-row">
             <span class="chk-box" data-role="chk-sub" data-ci="${ci}" data-si="${si}">✓</span>
-            <span class="sub-btn" style="cursor:default;">${s.title}</span>
+            <span class="sub-btn" style="cursor:default;">${s.title}${(!s.words.length && s.richOefenen) ? ' <span class="ai-check-note">(grammatica)</span>' : ''}</span>
             ${masteryBadgeHtml(srsMasteryForWords(lc2, s.words))}
           </div>`).join('')}
       </div>
@@ -8223,42 +8270,57 @@ function initSelect(wrapId, chapters, mode, specials){
   }
 
   function collectWords(){
-    const words = []; let firstItemLabel;
+    const words = []; let firstItemLabel; const richSubs = [];
     selected.forEach(key=>{
       const [ci,si] = key.split('-').map(Number);
       const s = chapters[ci].subs[si];
-      if(firstItemLabel===undefined) firstItemLabel = s.itemLabel;
-      words.push(...s.words);
+      if(s.words && s.words.length){
+        if(firstItemLabel===undefined) firstItemLabel = s.itemLabel;
+        words.push(...s.words);
+      }
+      if(s.richOefenen) richSubs.push(s);
     });
-    return { words, itemLabel: firstItemLabel };
+    return { words, itemLabel: firstItemLabel, richSubs };
+  }
+
+  function richBlocksHtml(richSubs){
+    return richSubs.map(s=>`<h3>${s.title.replace(/^Les:\s*/,'')}</h3>${s.richOefenen()}`).join('');
   }
 
   function updateFooter(){
-    const { words, itemLabel } = collectWords();
+    const { words, itemLabel, richSubs } = collectWords();
     const itemNoun = itemLabel==='letter' ? (words.length===1?'letter':'letters') : 'woorden';
     if(mode==='oefenen'){
-      footer.innerHTML = selected.size ? `<button class="next-btn show" data-role="start-btn">Start oefenen (${words.length} ${itemNoun} geselecteerd)</button>` : '';
+      const parts = [];
+      if(words.length) parts.push(`${words.length} ${itemNoun}`);
+      if(richSubs.length) parts.push(`${richSubs.length} grammatica-onderdeel${richSubs.length===1?'':'en'}`);
+      footer.innerHTML = selected.size ? `<button class="next-btn show" data-role="start-btn">Start oefenen (${parts.join(', ')} geselecteerd)</button>` : '';
       const startBtn = footer.querySelector('[data-role="start-btn"]');
       if(startBtn){
         startBtn.addEventListener('click', ()=>{
           let area = root.querySelector('[data-role="oefen-area"]');
           if(!area){ area = document.createElement('div'); area.dataset.role='oefen-area'; area.style.marginTop='20px'; root.appendChild(area); }
-          area.innerHTML = renderOefenCategoryPicker(
+          const richHtml = richBlocksHtml(richSubs);
+          const wordsHtml = words.length ? renderOefenCategoryPicker(
             { sel: { title:'Geselecteerde paragrafen', sub:'', words, vocabOnly:true, srsLang:currentLang.toUpperCase(), itemLabel } },
             null, (w)=>w.target, undefined, undefined, undefined, currentLang.toUpperCase()
-          );
+          ) : '';
+          area.innerHTML = richHtml + wordsHtml;
         });
       }
     } else {
       if(!selected.size){ footer.innerHTML=''; return; }
-      footer.innerHTML = `
+      const dirToggle = words.length ? `
         <div class="dir-toggle" style="display:flex;">
           <span class="dir-label">Richting:</span>
           <button class="dir-btn" data-dir="nl2target">NL → ${currentLang.toUpperCase()}</button>
           <button class="dir-btn" data-dir="target2nl">${currentLang.toUpperCase()} → NL</button>
           <button class="dir-btn active" data-dir="both">Beide</button>
-        </div>
-        <button class="next-btn show" data-role="start-toets" style="margin-top:12px;">Start toets (20 vragen)</button>
+        </div>` : '';
+      const startLabel = words.length ? 'Start toets (20 vragen)' : 'Start grammatica-oefening';
+      footer.innerHTML = `
+        ${dirToggle}
+        <button class="next-btn show" data-role="start-toets" style="margin-top:12px;">${startLabel}</button>
       `;
       let dir = 'both';
       footer.querySelectorAll('.dir-btn').forEach(b=>{
@@ -8268,8 +8330,10 @@ function initSelect(wrapId, chapters, mode, specials){
         });
       });
       footer.querySelector('[data-role="start-toets"]').addEventListener('click', ()=>{
-        const { words:w2, itemLabel:il2 } = collectWords();
-        content.innerHTML = renderToetsRunner(w2, currentLang.toUpperCase(), il2, dir);
+        const { words:w2, itemLabel:il2, richSubs:rs2 } = collectWords();
+        const richHtml = richBlocksHtml(rs2);
+        const toetsHtml = w2.length ? renderToetsRunner(w2, currentLang.toUpperCase(), il2, dir) : '';
+        content.innerHTML = richHtml + toetsHtml;
       });
     }
   }
