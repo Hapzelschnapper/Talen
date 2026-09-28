@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.80</div>
+<div class="version-badge">v1.81</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -5143,6 +5143,22 @@ document.getElementById('settings-btn').addEventListener('click', openSettingsMo
 srsMigrateToSingleUser();
 if(ghConfigured()) ghSyncNow().then(()=>render());
 
+// Toont een oefening/toets op een volledig eigen, leeg scherm — nooit als toevoeging onder
+// bestaande lesstof, woordenlijsten of selectievinkjes, zodat daar niet naar boven voor het
+// antwoord gescrold kan worden. "← Terug" tekent het scherm waar de oefening vandaan kwam
+// opnieuw (via render()), zonder enige navigatiestatus te wijzigen.
+function showFullScreenExercise(html, initFn){
+  const wrapId = 'ex-' + Math.random().toString(36).slice(2,8);
+  content.innerHTML = `<div id="${wrapId}">
+    <button class="back-btn" data-role="exercise-back" style="display:inline-block;">← Terug</button>
+    <div data-role="exercise-body">${html}</div>
+  </div>`;
+  window.scrollTo(0,0);
+  const root = document.getElementById(wrapId);
+  root.querySelector('[data-role="exercise-back"]').addEventListener('click', ()=>{ render(); });
+  if(initFn) initFn(root.querySelector('[data-role="exercise-body"]'));
+}
+
 function renderNav(){
   document.body.dataset.lang = currentLang;
   backBtn.style.display = 'inline-block';
@@ -8190,7 +8206,6 @@ function renderLessonDetail(chapters){
       <button class="back-btn" data-role="lessen-back" style="display:inline-block;">← Hoofdstukken</button>
       ${sc.leren()}
       <div style="margin-top:20px;"><button class="next-btn show" data-role="special-oefen">Oefenen →</button></div>
-      <div data-role="special-quiz" style="margin-top:16px;"></div>
     </div>`;
   }
 
@@ -8206,7 +8221,6 @@ function renderLessonDetail(chapters){
     <button class="back-btn" data-role="lessen-back" style="display:inline-block;">← Hoofdstukken</button>
     ${bodyHtml}
     ${oefenBtn}${matchBtn}
-    <div data-role="sub-quiz" style="margin-top:16px;"></div>
   </div>`;
 }
 
@@ -8221,7 +8235,7 @@ function initLessonDetail(wrapId, chapters){
   if(lessenSelection.special){
     const sc = SPECIAL_CONTENT[lessenSelection.special];
     root.querySelector('[data-role="special-oefen"]').addEventListener('click', ()=>{
-      root.querySelector('[data-role="special-quiz"]').innerHTML = lessenSelection.special==='la-nouns' ? renderLaParseOefenen() : sc.oefenen();
+      showFullScreenExercise(lessenSelection.special==='la-nouns' ? renderLaParseOefenen() : sc.oefenen());
     });
     return;
   }
@@ -8231,21 +8245,16 @@ function initLessonDetail(wrapId, chapters){
   const oefenBtn = root.querySelector('[data-role="sub-oefen"]');
   if(oefenBtn){
     oefenBtn.addEventListener('click', ()=>{
-      if(s.richOefenen){
-        root.querySelector('[data-role="sub-quiz"]').innerHTML = s.richOefenen();
-        return;
-      }
-      root.querySelector('[data-role="sub-quiz"]').innerHTML = renderOefenCategoryPicker(
+      const quizHtml = s.richOefenen ? s.richOefenen() : renderOefenCategoryPicker(
         { one: { title:s.title, sub:'', words:s.words, vocabOnly:true, srsLang:currentLang.toUpperCase(), itemLabel:s.itemLabel } },
         null, (w)=>w.target, undefined, undefined, undefined, currentLang.toUpperCase()
       );
+      showFullScreenExercise(quizHtml);
     });
   }
   if(s.matching){
     root.querySelector('[data-role="matching-btn"]').addEventListener('click', ()=>{
-      const quizArea = root.querySelector('[data-role="sub-quiz"]');
-      quizArea.innerHTML = renderMatchingGame();
-      setTimeout(()=>initMatchingGame(quizArea), 0);
+      showFullScreenExercise(renderMatchingGame(), (bodyEl)=>initMatchingGame(bodyEl));
     });
   }
 }
@@ -8369,14 +8378,12 @@ function initSelect(wrapId, chapters, mode, specials){
       const startBtn = footer.querySelector('[data-role="start-btn"]');
       if(startBtn){
         startBtn.addEventListener('click', ()=>{
-          let area = root.querySelector('[data-role="oefen-area"]');
-          if(!area){ area = document.createElement('div'); area.dataset.role='oefen-area'; area.style.marginTop='20px'; root.appendChild(area); }
           const richHtml = richBlocksHtml(richSubs);
           const wordsHtml = words.length ? renderOefenCategoryPicker(
             { sel: { title:'Geselecteerde paragrafen', sub:'', words, vocabOnly:true, srsLang:currentLang.toUpperCase(), itemLabel } },
             null, (w)=>w.target, undefined, undefined, undefined, currentLang.toUpperCase()
           ) : '';
-          area.innerHTML = richHtml + wordsHtml;
+          showFullScreenExercise(richHtml + wordsHtml);
         });
       }
     } else {
@@ -8404,7 +8411,7 @@ function initSelect(wrapId, chapters, mode, specials){
         const { words:w2, itemLabel:il2, richSubs:rs2 } = collectWords();
         const richHtml = richBlocksHtml(rs2);
         const toetsHtml = w2.length ? renderToetsRunner(w2, currentLang.toUpperCase(), il2, dir) : '';
-        content.innerHTML = richHtml + toetsHtml;
+        showFullScreenExercise(richHtml + toetsHtml);
       });
     }
   }
