@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.79</div>
+<div class="version-badge">v1.80</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -5504,13 +5504,13 @@ function initLaParseQuiz(wrapId, groups, direction){
 
 function laNounOefenen(){
   const cats = {
-    decl1: { title:'1e verbuigingsgroep', sub:'femina-type', words: LA_DECL1, forms:(w)=>decl1(w.lat.slice(0,-1)), vertaalFn: laPhraseQuestion },
-    decl2: { title:'2e verbuigingsgroep', sub:'servus / donum', words: LA_DECL2, forms:(w)=>{ const s=w.lat.slice(0,-2); return w.g==='m'?decl2m(s):decl2n(s); }, vertaalFn: laPhraseQuestion },
-    decl3: { title:'3e verbuigingsgroep', sub:'rex / nomen', words: LA_DECL3, forms:(w)=> w.g==='n' ? decl3n(w.lat,w.stem) : decl3(w.lat,w.stem), vertaalFn: laPhraseQuestion },
+    decl1: { title:'1e verbuigingsgroep', sub:'femina-type', words: LA_DECL1, forms:(w)=>decl1(w.lat.slice(0,-1)), vertaalFn: laPhraseQuestion, srsLang:'LA' },
+    decl2: { title:'2e verbuigingsgroep', sub:'servus / donum', words: LA_DECL2, forms:(w)=>{ const s=w.lat.slice(0,-2); return w.g==='m'?decl2m(s):decl2n(s); }, vertaalFn: laPhraseQuestion, srsLang:'LA' },
+    decl3: { title:'3e verbuigingsgroep', sub:'rex / nomen', words: LA_DECL3, forms:(w)=> w.g==='n' ? decl3n(w.lat,w.stem) : decl3(w.lat,w.stem), vertaalFn: laPhraseQuestion, srsLang:'LA' },
     adj: { title:'Bijvoeglijke naamwoorden', sub:'-us, -a, -um', words: LA_ADJ, forms:(w)=>{
       const stem=w.lat.slice(0,-2); const g=['m','f','n'][Math.floor(Math.random()*3)];
       const f = g==='m'?decl2m(stem):g==='f'?decl1(stem):decl2n(stem); f.gender=g; return f;
-    } }
+    }, srsLang:'LA' }
   };
   return renderOefenCategoryPicker(cats, (word, formKey, forms)=>{
     const caseKey = formKey.slice(0,3); const number = formKey.slice(3);
@@ -5606,10 +5606,10 @@ function laTijdenOverzicht(){
 
 function laVerbOefenen(){
   const cats = {
-    conj1: { title:'1e vervoeging', sub:'-are', words: LA_CONJ1, forms:(w)=>verbFormsLA(w, conj1) },
-    conj2: { title:'2e vervoeging', sub:'-ere (lang)', words: LA_CONJ2, forms:(w)=>verbFormsLA(w, conj2) },
-    conj3: { title:'3e vervoeging', sub:'-ere (kort)', words: LA_CONJ3, forms:(w)=>verbFormsLA(w, conj3) },
-    conj4: { title:'4e vervoeging', sub:'-ire', words: LA_CONJ4, forms:(w)=>verbFormsLA(w, conj4) }
+    conj1: { title:'1e vervoeging', sub:'-are', words: LA_CONJ1, forms:(w)=>verbFormsLA(w, conj1), srsLang:'LA' },
+    conj2: { title:'2e vervoeging', sub:'-ere (lang)', words: LA_CONJ2, forms:(w)=>verbFormsLA(w, conj2), srsLang:'LA' },
+    conj3: { title:'3e vervoeging', sub:'-ere (kort)', words: LA_CONJ3, forms:(w)=>verbFormsLA(w, conj3), srsLang:'LA' },
+    conj4: { title:'4e vervoeging', sub:'-ire', words: LA_CONJ4, forms:(w)=>verbFormsLA(w, conj4), srsLang:'LA' }
   };
   return renderOefenCategoryPicker(cats, (word, formKey)=>{
     const tense = formKey.slice(0,-1); const person = +formKey.slice(-1);
@@ -5938,15 +5938,15 @@ function deVerbOefenen(){
       const out={}; dePresentForms(w.stem,w.needsE).forEach((f,i)=>out['pres'+i]=f);
       dePerfektForms(w.stem,w.needsE).forEach((f,i)=>out['perf'+i]=f);
       return out;
-    } },
+    }, srsLang:'DE' },
     strong: { title:'Sterke werkwoorden', sub:'a → ä, Präsens', words: DE_STRONG_A, forms:(w)=>{
       const out={}; deAaForms(w.stem,w.aStem,w.needsE).forEach((f,i)=>out['pres'+i]=f);
       return out;
-    } },
+    }, srsLang:'DE' },
     modal: { title:'Modale werkwoorden', sub:'+ möchten & wissen', words: DE_MODALS, forms:(w)=>{
       const out={}; w.forms.forEach((f,i)=>out['pres'+i]=f);
       return out;
-    } }
+    }, srsLang:'DE' }
   };
   return renderOefenCategoryPicker(cats, (word, formKey)=>{
     const tense = formKey.slice(0,4); const person = +formKey.slice(4);
@@ -6001,10 +6001,10 @@ function frVerbLeren(){
 }
 function frVerbOefenen(){
   const cats = {
-    avoir_etre: { title:'avoir & être', sub:'présent & passé composé', words: [{fr:'avoir',nl:'hebben',stem:''},{fr:'être',nl:'zijn',stem:''}], forms:(w)=>{ const out={}; const pres = w.fr==='avoir' ? FR_AVOIR : FR_ETRE; const pc = frPasseCompose(w.fr==='avoir' ? 'eu' : 'été'); pres.forEach((f,i)=>out['pres'+i]=f); pc.forEach((f,i)=>out['pc'+i]=f); return out; } },
-    er: { title:'-er werkwoorden', sub:'parler-type', words: FR_ER, forms:(w)=>{ const out={}; frPresentER(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'é').forEach((f,i)=>out['pc'+i]=f); return out; } },
-    ir: { title:'-ir werkwoorden', sub:'finir-type', words: FR_IR, forms:(w)=>{ const out={}; frPresentIR(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'i').forEach((f,i)=>out['pc'+i]=f); return out; } },
-    re: { title:'-re werkwoorden', sub:'vendre-type', words: FR_RE, forms:(w)=>{ const out={}; frPresentRE(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'u').forEach((f,i)=>out['pc'+i]=f); return out; } }
+    avoir_etre: { title:'avoir & être', sub:'présent & passé composé', words: [{fr:'avoir',nl:'hebben',stem:''},{fr:'être',nl:'zijn',stem:''}], forms:(w)=>{ const out={}; const pres = w.fr==='avoir' ? FR_AVOIR : FR_ETRE; const pc = frPasseCompose(w.fr==='avoir' ? 'eu' : 'été'); pres.forEach((f,i)=>out['pres'+i]=f); pc.forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' },
+    er: { title:'-er werkwoorden', sub:'parler-type', words: FR_ER, forms:(w)=>{ const out={}; frPresentER(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'é').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' },
+    ir: { title:'-ir werkwoorden', sub:'finir-type', words: FR_IR, forms:(w)=>{ const out={}; frPresentIR(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'i').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' },
+    re: { title:'-re werkwoorden', sub:'vendre-type', words: FR_RE, forms:(w)=>{ const out={}; frPresentRE(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'u').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' }
   };
   return renderOefenCategoryPicker(cats, (word, formKey)=>{
     const tense = formKey.slice(0,4)==='pres' ? 'pres' : 'pc'; const person = +formKey.slice(tense.length);
@@ -7252,6 +7252,37 @@ function srsRecord(langCode, word, correct){
   ghSchedulePush();
 }
 
+/* ---- SRS per losse oefen-item (bijv. één werkwoordsvorm van één werkwoord, niet het hele woord) ----
+   Gebruikt door de vervoegings-/verbuigingsoefeningen zodat elke vorm (elke persoon × elke tijd) zijn
+   eigen herhaalschema krijgt, in plaats van willekeurig te kiezen. Zo komt op termijn het hele gebied
+   van vormen aan bod, en worden net-geleerde/foutieve vormen vaker herhaald dan al goed beheerste. ---- */
+function srsItemKey(langCode, itemId){
+  return `${langCode}|item|${itemId}`;
+}
+function srsIsDueItem(langCode, itemId){
+  const store = srsLoadAll();
+  const rec = store[srsItemKey(langCode, itemId)];
+  if(!rec) return true;
+  return rec.due <= srsToday();
+}
+function srsBoxForItem(langCode, itemId){
+  const store = srsLoadAll();
+  const rec = store[srsItemKey(langCode, itemId)];
+  return rec ? rec.box : null;
+}
+function srsRecordItem(langCode, itemId, correct){
+  const store = srsLoadAll();
+  const key = srsItemKey(langCode, itemId);
+  const rec = store[key] || { box:0, due: srsToday() };
+  rec.box = correct ? Math.min(rec.box+1, SRS_INTERVALS_DAYS.length-1) : 0;
+  const d = new Date();
+  d.setDate(d.getDate() + SRS_INTERVALS_DAYS[rec.box]);
+  rec.due = d.toISOString().slice(0,10);
+  store[key] = rec;
+  srsSaveAll(store);
+  ghSchedulePush();
+}
+
 /* ---- Beheersingsindicator (1-10, rood-groen) op basis van de SRS-boxen ---- */
 function srsBoxFor(langCode, word){
   const store = srsLoadAll();
@@ -7626,12 +7657,40 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     return cat.words[Math.floor(Math.random()*cat.words.length)];
   }
 
-  function buildVormQuestion(){
+  // Bouwt de volledige verzameling (woord, vormsleutel)-paren van deze categorie — elke losse
+  // werkwoordsvorm/naamvalsvorm is één eigen oefen-item met een eigen SRS-schema. Kiest bij voorkeur
+  // uit de items die "aan de beurt" zijn, zodat het hele gebied (alle personen × alle tijden/naamvallen,
+  // voor alle woorden) op termijn aan bod komt, in plaats van steeds dezelfde paar toevalstreffers.
+  function vormItemPool(){
     const cat = cats[catKey];
+    const pairs = [];
+    cat.words.forEach(w=>{
+      const forms = cat.forms(w);
+      Object.keys(forms).filter(k=>k!=='gender').forEach(formKey=>{
+        pairs.push({ word:w, formKey, forms, itemId: `${lemmaFn(w)}|${formKey}` });
+      });
+    });
+    return pairs;
+  }
+
+  function pickVormPair(){
+    const cat = cats[catKey];
+    const pairs = vormItemPool();
+    if(cat.srsLang){
+      const due = pairs.filter(p=>srsIsDueItem(cat.srsLang, p.itemId));
+      const pool = due.length ? due : pairs;
+      return pool[Math.floor(Math.random()*pool.length)];
+    }
     const word = pickWord();
     const forms = cat.forms(word);
     const formKeys = Object.keys(forms).filter(k=>k!=='gender');
     const formKey = formKeys[Math.floor(Math.random()*formKeys.length)];
+    return { word, formKey, forms, itemId: `${lemmaFn(word)}|${formKey}` };
+  }
+
+  function buildVormQuestion(){
+    const { word, formKey, forms, itemId } = pickVormPair();
+    const formKeys = Object.keys(forms).filter(k=>k!=='gender');
     const correct = forms[formKey];
     const allValues = Array.from(new Set(formKeys.map(k=>forms[k])));
     const wrongPool = shuffle(allValues.filter(v=>v!==correct));
@@ -7646,6 +7705,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     }
     return {
       type:'vorm',
+      word, formKey, itemId,
       questionHTML: questionTemplate(word, formKey, forms),
       correct,
       mcOptions: shuffle([correct, ...wrongPool.slice(0,3)]),
@@ -7659,7 +7719,14 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     if(cat.vertaalFn){
       return Object.assign({type:'vertaal'}, cat.vertaalFn());
     }
-    const word = pickWord();
+    let word;
+    if(cat.srsLang){
+      const due = cat.words.filter(w=>srsIsDueItem(cat.srsLang, `${lemmaFn(w)}|_vertaal`));
+      const pool = due.length ? due : cat.words;
+      word = pool[Math.floor(Math.random()*pool.length)];
+    } else {
+      word = pickWord();
+    }
     const lemma = lemmaFn(word);
     const correct = word.nl;
     const others = cat.words.filter(w=>w!==word);
@@ -7670,6 +7737,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     });
     return {
       type:'vertaal',
+      word, itemId: `${lemma}|_vertaal`,
       questionHTML: `Wat betekent <span class="w">${lemma}</span>?`,
       correct,
       mcOptions: shuffle([correct, ...wrongPool.slice(0,3)]),
@@ -7804,6 +7872,9 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     const cat = cats[catKey];
     if(cat.vocabOnly && cat.srsLang && current.word){
       srsRecord(cat.srsLang, current.word, isCorrect);
+    }
+    if(!cat.vocabOnly && cat.srsLang && current.itemId){
+      srsRecordItem(cat.srsLang, current.itemId, isCorrect);
     }
 
     const aiNote = aiApproved ? ' <span class="ai-check-note">(geaccepteerd na AI-check)</span>' : '';
