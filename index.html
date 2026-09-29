@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.83</div>
+<div class="version-badge">v1.84</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -1501,10 +1501,11 @@ function dePhraseQuestion(){
 }
 
 /* ================= GERMAN: VERB ENGINE ================= */
-function dePresentForms(stem, needsE){
-  return needsE
-    ? [stem+'e',stem+'est',stem+'et',stem+'en',stem+'et',stem+'en']
-    : [stem+'e',stem+'st',stem+'t',stem+'en',stem+'t',stem+'en'];
+function dePresentForms(stem, needsE, sKlank){
+  if(needsE) return [stem+'e',stem+'est',stem+'et',stem+'en',stem+'et',stem+'en'];
+  // Stam eindigt op een s-klank (s, ss, ß, z, x) — du krijgt dan alleen -t, geen extra -st.
+  if(sKlank) return [stem+'e',stem+'t',stem+'t',stem+'en',stem+'t',stem+'en'];
+  return [stem+'e',stem+'st',stem+'t',stem+'en',stem+'t',stem+'en'];
 }
 const DE_HABEN = ['habe','hast','hat','haben','habt','haben'];
 function dePerfektForms(stem, needsE){
@@ -2971,7 +2972,7 @@ const DE_VERBS = [['mach','maken, doen'],['spiel','spelen'],['lern','leren'],['l
   ['sag','zeggen'],['hör','horen'],['koch','koken'],['tanz','dansen'],['lach','lachen'],['wein','huilen'],
   ['wart','wachten'],['antwort','antwoorden'],['hol','halen'],['mal','schilderen'],['brauch','nodig hebben'],
   ['glaub','geloven'],['dank','bedanken'],['üb','oefenen']].map(([stem,nl])=>({
-    stem, nl, de: stem+'en', needsE: /[td]$/.test(stem)
+    stem, nl, de: stem+'en', needsE: /[td]$/.test(stem), sKlank: /[sxzß]$/.test(stem)
   }));
 
 /* Strong verbs with a -> ä stem change in du/er-sie-es (Präsens only) */
@@ -5981,7 +5982,7 @@ const DE_MC_Geslacht = [
 function deVerbOefenen(){
   const cats = {
     verbs: { title:'Regelmatige werkwoorden', sub:'Präsens & Perfekt', words: DE_VERBS, forms:(w)=>{
-      const out={}; dePresentForms(w.stem,w.needsE).forEach((f,i)=>out['pres'+i]=f);
+      const out={}; dePresentForms(w.stem,w.needsE,w.sKlank).forEach((f,i)=>out['pres'+i]=f);
       dePerfektForms(w.stem,w.needsE).forEach((f,i)=>out['perf'+i]=f);
       return out;
     }, srsLang:'DE' },
@@ -6002,6 +6003,23 @@ function deVerbOefenen(){
     const tense = formKey.slice(0,4); const person = +formKey.slice(4);
     const tenseLabel = tense==='pres' ? 'Präsens' : 'Perfekt';
     return `${tenseLabel} voor ${PERSON_LABEL_DE[person]}`;
+  }, undefined, undefined, 'DE');
+}
+
+// Generieke Präsens-vervoegingsoefening over een (sub)verzameling echte werkwoorden — gebruikt om
+// de grammaticalessen (Les:-tegels) te koppelen aan de volle breedte van de werkwoordenlijst,
+// in plaats van alleen aan een klein handjevol vaste meerkeuzevragen.
+function deWeakPresentOefenen(verbList, title){
+  const cats = { pres: { title: title || 'Persoonsvormen', sub:'Präsens, alle werkwoorden uit deze les', words: verbList, forms:(w)=>{
+    const out={}; dePresentForms(w.stem,w.needsE,w.sKlank).forEach((f,i)=>out['p'+i]=f);
+    return out;
+  }, srsLang:'DE' } };
+  return renderOefenCategoryPicker(cats, (word, formKey)=>{
+    const p = +formKey.slice(1);
+    return `Wat is de vorm van <span class="w">${word.de}</span> (${word.nl}) in het Präsens voor <strong>${PERSON_LABEL_DE[p]}</strong>?`;
+  }, (w)=>w.de, (word, formKey)=>{
+    const p = +formKey.slice(1);
+    return `Präsens voor ${PERSON_LABEL_DE[p]}`;
   }, undefined, undefined, 'DE');
 }
 
@@ -7735,6 +7753,19 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     wordGrid.innerHTML = cat.words.map(w=>`<div><b>${lemmaFn(w)}</b> — ${w.nl} ${cat.srsLang ? wordLevelBadgeHtml(cat.srsLang, w) : ''}</div>`).join('');
     wordlistWrap.open = false;
     dirToggle.style.display = 'flex';
+    // Bij een vormoefening (vervoeging/verbuiging) gaat de richtingsknop over "vorm maken" versus
+    // "vorm herkennen" in plaats van over vertaalrichting.
+    const nl2tBtn = dirToggle.querySelector('[data-dir="nl2target"]');
+    const t2nlBtn = dirToggle.querySelector('[data-dir="target2nl"]');
+    if(nl2tBtn && t2nlBtn){
+      if(cat.vocabOnly){
+        nl2tBtn.textContent = `NL → ${langCode||'taal'}`;
+        t2nlBtn.textContent = `${langCode||'taal'} → NL`;
+      } else {
+        nl2tBtn.textContent = 'Vorm maken';
+        t2nlBtn.textContent = 'Vorm herkennen';
+      }
+    }
     quizArea.style.display = 'block';
     score=0; total=0; streak=0;
     updateScore();
@@ -7811,6 +7842,36 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
       mcOptions: shuffle([correct, ...wrongPool.slice(0,3)]),
       accept: (val)=> ({ ok: normAnswerLoc(val)===normAnswerLoc(correct), typo:false }),
       altLookup
+    };
+  }
+
+  // De "andere richting" bij een vorm-oefening: niet de vorm produceren, maar 'm herkennen —
+  // gegeven de vervoegde/verbogen vorm, welke functie (persoon/tijd of naamval/getal) hoort erbij?
+  function buildIdentifyQuestion(){
+    const { word, formKey, forms, itemId } = pickVormPair();
+    const formKeys = Object.keys(forms).filter(k=>k!=='gender');
+    const correctForm = forms[formKey];
+    const correctDesc = describeForm(word, formKey, forms);
+    const distractorDescs = [];
+    const seen = new Set([normAnswerLoc(correctDesc)]);
+    formKeys.forEach(k=>{
+      if(k===formKey) return;
+      if(normAnswerLoc(forms[k])===normAnswerLoc(correctForm)) return; // zelfde vorm, andere functie: geen eenduidig fout antwoord
+      const desc = describeForm(word, k, forms);
+      const nd = normAnswerLoc(desc);
+      if(seen.has(nd)) return;
+      seen.add(nd);
+      distractorDescs.push(desc);
+    });
+    return {
+      type:'identify',
+      word, formKey, itemId,
+      questionHTML: `Welke vorm is <span class="w">${correctForm}</span> (van <strong>${lemmaFn(word)}</strong>, ${word.nl})?`,
+      correct: correctDesc,
+      mcOptions: shuffle([correctDesc, ...shuffle(distractorDescs).slice(0,3)]),
+      accept: (val)=> ({ ok: normAnswerLoc(val)===normAnswerLoc(correctDesc), typo:false }),
+      altLookup: {},
+      forceMc: true
     };
   }
 
@@ -7891,12 +7952,15 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
       else type = Math.random()<0.5 ? 'vocab_nl2t' : 'vocab_t2nl';
       current = buildVocabQuestion(type==='vocab_nl2t' ? 'nl2t' : 't2nl');
     } else {
+      // Bij vormoefeningen kiest de richtingsknop nu tussen de vorm zelf produceren
+      // ("NL → vorm") en 'm herkennen bij een gegeven vorm ("vorm → NL"); bij "Beide"
+      // komt daar de betekenisvertaling van het woordenboekwoord nog als variatie bij.
       if(direction==='nl2target') type='vorm';
-      else if(direction==='target2nl') type='vertaal';
-      else type = Math.random()<0.5 ? 'vorm' : 'vertaal';
-      current = type==='vorm' ? buildVormQuestion() : buildVertaalQuestion();
+      else if(direction==='target2nl') type='identify';
+      else { const r=Math.random(); type = r<(1/3) ? 'vorm' : (r<(2/3) ? 'identify' : 'vertaal'); }
+      current = type==='vorm' ? buildVormQuestion() : (type==='identify' ? buildIdentifyQuestion() : buildVertaalQuestion());
     }
-    current.answerMode = mcOnly ? 'mc' : (Math.random()<(1/3) ? 'mc' : 'input');
+    current.answerMode = current.forceMc ? 'mc' : (mcOnly ? 'mc' : (Math.random()<(1/3) ? 'mc' : 'input'));
     hintTaps = 0;
     awaitingNext = false;
 
@@ -7909,7 +7973,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
     checkBtn.textContent='Controleer';
 
     const wEl = questionText.querySelector('.w');
-    if(wEl && !noHints){
+    if(wEl && !noHints && current.type!=='identify'){
       wEl.classList.add('hintable');
       wEl.title = 'Tik voor een hint';
       wEl.addEventListener('click', onHintTap);
@@ -8121,14 +8185,14 @@ function getChapters(lang){
     chapters.push({ id:'de-verbs', title:'Werkwoorden', special:'de-verbs' });
     const DE_LES_BY_HST = {
       '1': [
-        { title:'Les: Werkwoorden & voornaamwoord', words:[], richLeren: deLes_PersoonlijkWerkwoord, richOefenen: ()=>renderMcQuiz(DE_MC_PersoonlijkWerkwoord, 'Werkwoorden & voornaamwoord') },
+        { title:'Les: Werkwoorden & voornaamwoord', words:[], richLeren: deLes_PersoonlijkWerkwoord, richOefenen: ()=>renderMcQuiz(DE_MC_PersoonlijkWerkwoord, 'Werkwoorden & voornaamwoord') + '<h3 style="margin-top:28px;">Oefen de persoonsvormen — alle werkwoorden</h3>' + deWeakPresentOefenen(DE_VERBS, 'Präsens, alle regelmatige werkwoorden') },
         { title:'Les: Haben en sein', words:[], richLeren: deLes_HabenSein, richOefenen: ()=>renderMcQuiz(DE_MC_HabenSein, 'Haben en sein') },
         { title:'Les: Het lidwoord', words:[], richLeren: deLes_Lidwoord, richOefenen: ()=>renderMcQuiz(DE_MC_Lidwoord, 'Het lidwoord') },
         { title:'Les: Bezittelijk voornaamwoord', words:[], richLeren: deLes_Bezittelijk, richOefenen: ()=>renderMcQuiz(DE_MC_Bezittelijk, 'Bezittelijk voornaamwoord') }
       ],
       '2': [
-        { title:'Les: Werkwoorden met s-klank', words:[], richLeren: deLes_SKlank, richOefenen: ()=>renderMcQuiz(DE_MC_SKlank, 'Werkwoorden met s-klank') },
-        { title:'Les: Werkwoorden op -d/-t', words:[], richLeren: deLes_StamDT, richOefenen: ()=>renderMcQuiz(DE_MC_StamDT, 'Werkwoorden op -d/-t') },
+        { title:'Les: Werkwoorden met s-klank', words:[], richLeren: deLes_SKlank, richOefenen: ()=>renderMcQuiz(DE_MC_SKlank, 'Werkwoorden met s-klank') + '<h3 style="margin-top:28px;">Oefen de persoonsvormen</h3>' + deWeakPresentOefenen(DE_VERBS.filter(w=>w.sKlank), 'Präsens, werkwoorden met s-klank') },
+        { title:'Les: Werkwoorden op -d/-t', words:[], richLeren: deLes_StamDT, richOefenen: ()=>renderMcQuiz(DE_MC_StamDT, 'Werkwoorden op -d/-t') + '<h3 style="margin-top:28px;">Oefen de persoonsvormen</h3>' + deWeakPresentOefenen(DE_VERBS.filter(w=>w.needsE), 'Präsens, werkwoorden op -d/-t') },
         { title:'Les: Persoonlijk voornaamwoord (vervanging)', words:[], richLeren: deLes_PersVervanging, richOefenen: ()=>renderMcQuiz(DE_MC_PersVervanging, 'Persoonlijk voornaamwoord') },
         { title:'Les: Geslacht van het zelfstandig naamwoord', words:[], richLeren: deLes_Geslacht, richOefenen: ()=>renderMcQuiz(DE_MC_Geslacht, 'Geslacht van het zelfstandig naamwoord') }
       ]
