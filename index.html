@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.86</div>
+<div class="version-badge">v1.87</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -7763,8 +7763,13 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
   function matchesLoose(val, correct){
     const nv = normAnswerLoc(val), nc = normAnswerLoc(correct);
     if(nv===nc) return true;
-    const tokens = nv.split(/\s+/).filter(Boolean);
-    if(tokens.length>1 && tokens[tokens.length-1]===nc) return true;
+    // Accepteer een onderwerp ervoor, ook samengetrokken/geëlideerd (bijv. "j'ai eu" voor "ai eu",
+    // "du machst" voor "machst") — de gevraagde vorm moet dan wel het eind van het antwoord zijn,
+    // met een woordgrens (spatie, apostrof of koppelteken) ervoor, niet zomaar een deel van een woord.
+    if(nv.length>nc.length && nv.endsWith(nc)){
+      const boundaryChar = nv[nv.length-nc.length-1];
+      if(/[\s'’-]/.test(boundaryChar)) return true;
+    }
     return false;
   }
 
