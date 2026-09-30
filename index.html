@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.85</div>
+<div class="version-badge">v1.86</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -7748,15 +7748,24 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
   let direction = 'both';
   let score=0,total=0,streak=0,current=null,hintTaps=0,awaitingNext=false;
 
-  // Het Griekse toetsenbord op het scherm kan geen accenten/spiritus typen — dus bij het Grieks
-  // wordt de beoordeling van getypte antwoorden voor die tekens opgeschort: accenten, spiritus en
-  // iota subscriptum worden genegeerd bij het vergelijken (elders blijft alles exact).
-  function stripGreekDiacritics(s){
+  // Accenten/diakritische tekens (ook spiritus/iota subscriptum bij het Grieks) tellen niet mee bij
+  // het beoordelen van getypte antwoorden, voor alle talen — de exacte notatie met accenten blijft
+  // wél zichtbaar in de feedback ("Exacte notatie: ..."), zodat je 'm toch leert.
+  function stripDiacritics(s){
     return s.normalize('NFD').replace(/[̀-ͯ]/g,'').normalize('NFC');
   }
   function normAnswerLoc(s){
-    const base = normAnswer(s);
-    return langCode==='EL' ? stripGreekDiacritics(base) : base;
+    return stripDiacritics(normAnswer(s));
+  }
+  // Staat toe dat er een onderwerp/voornaamwoord vóór de gevraagde persoonsvorm wordt getypt
+  // (bijv. "du machst" of "il parle" in plaats van alleen "machst"/"parle") — zolang het laatste
+  // woord van het antwoord de gevraagde vorm is, wordt dat goedgekeurd.
+  function matchesLoose(val, correct){
+    const nv = normAnswerLoc(val), nc = normAnswerLoc(correct);
+    if(nv===nc) return true;
+    const tokens = nv.split(/\s+/).filter(Boolean);
+    if(tokens.length>1 && tokens[tokens.length-1]===nc) return true;
+    return false;
   }
 
   Object.keys(cats).forEach(key=>{
@@ -7870,7 +7879,7 @@ function initOefenen(wrapId, cats, questionTemplate, lemmaFn, describeForm, mcOn
       questionHTML: questionTemplate(word, formKey, forms),
       correct,
       mcOptions: shuffle([correct, ...wrongPool.slice(0,3)]),
-      accept: (val)=> ({ ok: normAnswerLoc(val)===normAnswerLoc(correct), typo:false }),
+      accept: (val)=> ({ ok: matchesLoose(val, correct), typo:false }),
       altLookup
     };
   }
@@ -8683,14 +8692,13 @@ function initToetsRunner(wrapId, words, langCode, itemLabel, direction){
   let idx=0, wrong=0, current=null, awaitingNext=false;
   const itemWord = itemLabel==='letter' ? 'de letter' : 'het woord';
 
-  // Zie initOefenen: het Griekse schermtoetsenbord kan geen accenten/spiritus typen, dus die
-  // worden bij het Grieks genegeerd bij het beoordelen van getypte antwoorden.
-  function stripGreekDiacritics(s){
+  // Zie initOefenen: accenten/diakritische tekens tellen niet mee bij het beoordelen van getypte
+  // antwoorden, voor alle talen — de exacte notatie blijft zichtbaar in de feedback.
+  function stripDiacritics(s){
     return s.normalize('NFD').replace(/[̀-ͯ]/g,'').normalize('NFC');
   }
   function normAnswerLoc(s){
-    const base = normAnswer(s);
-    return langCode==='EL' ? stripGreekDiacritics(base) : base;
+    return stripDiacritics(normAnswer(s));
   }
 
   function buildQ(dir, word){
