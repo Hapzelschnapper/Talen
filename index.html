@@ -310,7 +310,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.84</div>
+<div class="version-badge">v1.85</div>
 <div class="wrap">
   <header>
     <button id="back-btn" class="back-btn" style="display:none;">← Terug</button>
@@ -6042,34 +6042,52 @@ function frNounOefenen(){
 }
 
 /* ================= CONTENT: FRENCH VERBS ================= */
-function frVerbLeren(){
-  return `
-  <h2>Werkwoordsvervoeging in het Frans</h2>
-  <p>Deze cursus oefent twee tijden: het ${gloss('present_fr','présent')} (tegenwoordige tijd) en de ${gloss('passe_compose_fr','passé composé')} (voltooid verleden tijd, gevormd met <em>avoir</em> + voltooid deelwoord). Er zijn drie regelmatige groepen, herkenbaar aan de ${gloss('infinitif_fr','infinitief')}.</p>
-  <div class="note">
+const FR_STEM_INTRO = `<div class="note">
     <strong>Hoe kom je aan de stam?</strong> Bij regelmatige werkwoorden haal je de infinitiefuitgang (<em>-er</em>, <em>-ir</em> of <em>-re</em>) van de infinitief af — wat overblijft is de stam. Bijv. <em>parl<span class="ending">er</span></em> → stam <em>parl-</em>; <em>fin<span class="ending">ir</span></em> → stam <em>fin-</em>; <em>vend<span class="ending">re</span></em> → stam <em>vend-</em>. Aan die stam plak je vervolgens de <span class="ending">uitgang</span> (hieronder dikgedrukt en onderstreept) die bij de persoon (ik/jij/hij...) hoort.
-  </div>
+  </div>`;
+function frLes_AvoirEtre(){
+  return `
+  <h2>avoir (hebben) en être (zijn)</h2>
+  <p>Deze cursus oefent twee tijden: het ${gloss('present_fr','présent')} (tegenwoordige tijd) en de ${gloss('passe_compose_fr','passé composé')} (voltooid verleden tijd, gevormd met <em>avoir</em> + voltooid deelwoord).</p>
   <h3>avoir (hebben)</h3>
   ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_AVOIR[r] : frPasseCompose('eu')[r])}
   <h3>être (zijn)</h3>
   ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? FR_ETRE[r] : frPasseCompose('été')[r])}
-  <div class="note"><em>avoir</em> en <em>être</em> zijn onregelmatige werkwoorden — hun vormen moet je uit het hoofd leren, ze hebben geen vaste stam+uitgang zoals hieronder. Ook hun eigen passé composé wordt met <em>avoir</em> gevormd: <em>j'ai eu</em>, <em>j'ai été</em>. <em>avoir</em> is bovendien het hulpwerkwoord waarmee de passé composé van de meeste andere werkwoorden gevormd wordt.</div>
-  <h3>-er werkwoorden — bijv. parler (praten), stam <em>parl-</em></h3>
-  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('parl', frPresentER('parl')[r]) : FR_AVOIR[r] + ' ' + hl('parl','parlé'))}
-  <h3>-ir werkwoorden — bijv. finir (eindigen), stam <em>fin-</em></h3>
-  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('fin', frPresentIR('fin')[r]) : FR_AVOIR[r] + ' ' + hl('fin','fini'))}
-  <h3>-re werkwoorden — bijv. vendre (verkopen), stam <em>vend-</em></h3>
-  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('vend', frPresentRE('vend')[r]) : FR_AVOIR[r] + ' ' + hl('vend','vendu'))}
-  <div class="note">Het voltooid deelwoord: <em>-er</em> → <em>-é</em>, <em>-ir</em> → <em>-i</em>, <em>-re</em> → <em>-u</em>. Deze cursus gebruikt alleen werkwoorden die <em>avoir</em> als hulpwerkwoord nemen.</div>
+  <div class="note"><em>avoir</em> en <em>être</em> zijn onregelmatige werkwoorden — hun vormen moet je uit het hoofd leren, ze hebben geen vaste stam+uitgang zoals de regelmatige groepen. Ook hun eigen passé composé wordt met <em>avoir</em> gevormd: <em>j'ai eu</em>, <em>j'ai été</em>. <em>avoir</em> is bovendien het hulpwerkwoord waarmee de passé composé van de meeste andere werkwoorden gevormd wordt.</div>
   `;
 }
-function frVerbOefenen(){
-  const cats = {
-    avoir_etre: { title:'avoir & être', sub:'présent & passé composé', words: [{fr:'avoir',nl:'hebben',stem:''},{fr:'être',nl:'zijn',stem:''}], forms:(w)=>{ const out={}; const pres = w.fr==='avoir' ? FR_AVOIR : FR_ETRE; const pc = frPasseCompose(w.fr==='avoir' ? 'eu' : 'été'); pres.forEach((f,i)=>out['pres'+i]=f); pc.forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' },
-    er: { title:'-er werkwoorden', sub:'parler-type', words: FR_ER, forms:(w)=>{ const out={}; frPresentER(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'é').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' },
-    ir: { title:'-ir werkwoorden', sub:'finir-type', words: FR_IR, forms:(w)=>{ const out={}; frPresentIR(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'i').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' },
-    re: { title:'-re werkwoorden', sub:'vendre-type', words: FR_RE, forms:(w)=>{ const out={}; frPresentRE(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'u').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' }
-  };
+function frLes_ER(){
+  return `
+  <h2>-er werkwoorden — bijv. parler (praten)</h2>
+  ${FR_STEM_INTRO}
+  <h3>parler, stam <em>parl-</em></h3>
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('parl', frPresentER('parl')[r]) : FR_AVOIR[r] + ' ' + hl('parl','parlé'))}
+  <div class="note">Het voltooid deelwoord van -er werkwoorden: <em>-er</em> → <em>-é</em> (bijv. <em>parlé</em>). Deze cursus gebruikt alleen werkwoorden die <em>avoir</em> als hulpwerkwoord nemen.</div>
+  `;
+}
+function frLes_IR(){
+  return `
+  <h2>-ir werkwoorden — bijv. finir (eindigen)</h2>
+  ${FR_STEM_INTRO}
+  <h3>finir, stam <em>fin-</em></h3>
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('fin', frPresentIR('fin')[r]) : FR_AVOIR[r] + ' ' + hl('fin','fini'))}
+  <div class="note">Het voltooid deelwoord van -ir werkwoorden: <em>-ir</em> → <em>-i</em> (bijv. <em>fini</em>). Deze cursus gebruikt alleen werkwoorden die <em>avoir</em> als hulpwerkwoord nemen.</div>
+  `;
+}
+function frLes_RE(){
+  return `
+  <h2>-re werkwoorden — bijv. vendre (verkopen)</h2>
+  ${FR_STEM_INTRO}
+  <h3>vendre, stam <em>vend-</em></h3>
+  ${tableHTML([gloss('present_fr','présent'),gloss('passe_compose_fr','passé composé')], PERSON_LABEL_FR.map(p=>({label:p})), (r,c)=> c===0 ? hl('vend', frPresentRE('vend')[r]) : FR_AVOIR[r] + ' ' + hl('vend','vendu'))}
+  <div class="note">Het voltooid deelwoord van -re werkwoorden: <em>-re</em> → <em>-u</em> (bijv. <em>vendu</em>). Deze cursus gebruikt alleen werkwoorden die <em>avoir</em> als hulpwerkwoord nemen.</div>
+  `;
+}
+// Eén los-aanvinkbaar werkwoord-onderdeel oefenen (gebruikt door de paragraaf-checkboxes onder
+// Oefenen/Toets, zodat avoir&être, -er, -ir en -re los van elkaar te selecteren zijn in plaats van
+// alleen via één grote "Werkwoorden"-tegel).
+function frVerbCatOefenen(oneCat){
+  const cats = { one: oneCat };
   return renderOefenCategoryPicker(cats, (word, formKey)=>{
     const tense = formKey.slice(0,4)==='pres' ? 'pres' : 'pc'; const person = +formKey.slice(tense.length);
     const tenseLabel = tense==='pres' ? 'présent' : 'passé composé';
@@ -6079,6 +6097,18 @@ function frVerbOefenen(){
     const tenseLabel = tense==='pres' ? 'présent' : 'passé composé';
     return `${tenseLabel} voor ${PERSON_LABEL_FR[person]}`;
   }, undefined, undefined, 'FR');
+}
+function frVerbOefenen_AvoirEtre(){
+  return frVerbCatOefenen({ title:'avoir & être', sub:'présent & passé composé', words: [{fr:'avoir',nl:'hebben',stem:''},{fr:'être',nl:'zijn',stem:''}], forms:(w)=>{ const out={}; const pres = w.fr==='avoir' ? FR_AVOIR : FR_ETRE; const pc = frPasseCompose(w.fr==='avoir' ? 'eu' : 'été'); pres.forEach((f,i)=>out['pres'+i]=f); pc.forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' });
+}
+function frVerbOefenen_ER(){
+  return frVerbCatOefenen({ title:'-er werkwoorden', sub:'parler-type', words: FR_ER, forms:(w)=>{ const out={}; frPresentER(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'é').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' });
+}
+function frVerbOefenen_IR(){
+  return frVerbCatOefenen({ title:'-ir werkwoorden', sub:'finir-type', words: FR_IR, forms:(w)=>{ const out={}; frPresentIR(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'i').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' });
+}
+function frVerbOefenen_RE(){
+  return frVerbCatOefenen({ title:'-re werkwoorden', sub:'vendre-type', words: FR_RE, forms:(w)=>{ const out={}; frPresentRE(w.stem).forEach((f,i)=>out['pres'+i]=f); frPasseCompose(w.stem+'u').forEach((f,i)=>out['pc'+i]=f); return out; }, srsLang:'FR' });
 }
 
 /* ================= VOCAB PLACEHOLDER ================= */
@@ -8167,8 +8197,7 @@ const SPECIAL_CONTENT = {
   'la-nouns': { leren:laNounLeren, oefenen:laNounOefenen },
   'la-verbs': { leren:laVerbLeren, oefenen:laVerbOefenen },
   'de-nouns': { leren:deNounLeren, oefenen:deNounOefenen },
-  'de-verbs': { leren:deVerbLeren, oefenen:deVerbOefenen },
-  'fr-verbs': { leren:frVerbLeren, oefenen:frVerbOefenen }
+  'de-verbs': { leren:deVerbLeren, oefenen:deVerbOefenen }
 };
 
 function getChapters(lang){
@@ -8204,7 +8233,12 @@ function getChapters(lang){
       chapters.push({ id:'c'+ci, title:c.title, subs: [...lesSubs, ...vocabSubs] });
     });
   } else if(lang==='fr'){
-    chapters.push({ id:'fr-verbs', title:'Werkwoorden', special:'fr-verbs' });
+    chapters.push({ id:'fr-verbs', title:'Werkwoorden', subs: [
+      { title:'avoir & être', words:[], richLeren: frLes_AvoirEtre, richOefenen: frVerbOefenen_AvoirEtre },
+      { title:'-er werkwoorden', words:[], richLeren: frLes_ER, richOefenen: frVerbOefenen_ER },
+      { title:'-ir werkwoorden', words:[], richLeren: frLes_IR, richOefenen: frVerbOefenen_IR },
+      { title:'-re werkwoorden', words:[], richLeren: frLes_RE, richOefenen: frVerbOefenen_RE }
+    ] });
     FR_VOCAB.forEach((c,ci)=>{
       const hstNum = (c.title.match(/\d+/) || [String(ci+1)])[0];
       const rawSubs = c.subs.map(s=>({ title:s.title, words: normWords(s.words,'fr') }));
