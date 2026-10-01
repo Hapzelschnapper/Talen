@@ -5741,12 +5741,13 @@ function deNounLeren(){
   </div>
   `;
 }
-function deNounOefenen(){
+function deNounOefenen(only){
   const cats = {
     masc: { title:'der-woorden', sub:'mannelijk', words: DE_MASC, forms:()=>deArtForms('m'), vertaalFn: dePhraseQuestion },
     fem: { title:'die-woorden', sub:'vrouwelijk', words: DE_FEM, forms:()=>deArtForms('f'), vertaalFn: dePhraseQuestion },
     neut: { title:'das-woorden', sub:'onzijdig', words: DE_NEUT, forms:()=>deArtForms('n'), vertaalFn: dePhraseQuestion }
   };
+  if(only) Object.keys(cats).forEach(k=>{ if(!only.includes(k)) delete cats[k]; });
   return renderOefenCategoryPicker(cats, (word, formKey)=>{
     const caseKey = formKey.slice(0,3); const number = formKey.slice(3);
     return `Wat is het juiste lidwoord in de <strong>${DE_CASE_LABEL[caseKey]} ${number==='Sg'?'enkelvoud':'meervoud'}</strong> bij <span class="w">${word.de}</span> (${word.nl}, ${GENDER_LABEL[word.g]})?`;
@@ -5979,7 +5980,7 @@ const DE_MC_Geslacht = [
   { q:"Welk lidwoord hoort bij 'das Mädchen', ook al gaat het over een meisje?", options:['das (vanwege -chen)','die (vanwege "meisje")','der'], correct:'das (vanwege -chen)' }
 ];
 
-function deVerbOefenen(){
+function deVerbOefenen(only){
   const cats = {
     verbs: { title:'Regelmatige werkwoorden', sub:'Präsens & Perfekt', words: DE_VERBS, forms:(w)=>{
       const out={}; dePresentForms(w.stem,w.needsE,w.sKlank).forEach((f,i)=>out['pres'+i]=f);
@@ -5995,6 +5996,7 @@ function deVerbOefenen(){
       return out;
     }, srsLang:'DE' }
   };
+  if(only) Object.keys(cats).forEach(k=>{ if(!only.includes(k)) delete cats[k]; });
   return renderOefenCategoryPicker(cats, (word, formKey)=>{
     const tense = formKey.slice(0,4); const person = +formKey.slice(4);
     const tenseLabel = tense==='pres' ? 'Präsens' : 'Perfekt';
@@ -8461,11 +8463,26 @@ function renderSelect(mode){
     return renderOefenSpecialDetail();
   }
   const allChapters = getChapters(currentLang);
-  const specials = mode==='oefenen' ? allChapters.filter(c=>c.special) : [];
-  const chapters = allChapters
+  // Duits: Naamvallen en Werkwoorden zijn onder Oefenen gewone hoofdstukken met aanvinkbare
+  // subonderdelen (zoals bij Frans); de andere talen houden hun grammatica-tegels.
+  const deGrammar = (mode==='oefenen' && currentLang==='de') ? [
+    { id:'de-nouns', title:'Naamvallen', subs:[
+      { title:'der-woorden (mannelijk)', words:[], richOefenen: ()=>deNounOefenen(['masc']) },
+      { title:'die-woorden (vrouwelijk)', words:[], richOefenen: ()=>deNounOefenen(['fem']) },
+      { title:'das-woorden (onzijdig)', words:[], richOefenen: ()=>deNounOefenen(['neut']) }
+    ] },
+    { id:'de-verbs', title:'Werkwoorden', subs:[
+      { title:'Regelmatige werkwoorden (Präsens & Perfekt)', words:[], richOefenen: ()=>deVerbOefenen(['verbs']) },
+      { title:'Sterke werkwoorden (a → ä)', words:[], richOefenen: ()=>deVerbOefenen(['strong']) },
+      { title:'Modale werkwoorden (+ möchten & wissen)', words:[], richOefenen: ()=>deVerbOefenen(['modal']) }
+    ] }
+  ] : [];
+  const deGrammarIds = new Set(deGrammar.map(c=>c.id));
+  const specials = mode==='oefenen' ? allChapters.filter(c=>c.special && !deGrammarIds.has(c.special)) : [];
+  const chapters = [...deGrammar, ...allChapters
     .filter(c=>!c.special)
     .map(c=>({ ...c, subs: c.subs.filter(s=>s.words.length>0 || s.richOefenen) }))
-    .filter(c=>c.subs.length>0);
+    .filter(c=>c.subs.length>0)];
   const wrapId = 'sel-' + Math.random().toString(36).slice(2,8);
   setTimeout(()=>initSelect(wrapId, chapters, mode, specials), 0);
   const specialBlocks = specials.map((c,si)=>`
